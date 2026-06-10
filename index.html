@@ -332,6 +332,43 @@
             fill: currentColor;
         }
 
+        /* Logo/Cover Image */
+        .card-cover {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card-cover:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .logo-link {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .logo-link img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .logo-link:hover img {
+            transform: scale(1.05);
+        }
+
         /* Video Modal */
         .modal-backdrop {
             position: fixed;
@@ -666,9 +703,12 @@
         <section class="timeline">
             <div class="timeline-line"></div>
 
-            <article class="timeline-item" data-year="2024">
+<article class="timeline-item" data-year="2024">
                 <div class="timeline-dot"></div>
                 <div class="card">
+                    <a href="https://photos.app.goo.gl/XkYLzAQ5jqQrupqy8" target="_blank" class="logo-link" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, var(--accent-soft), #fef3c7);text-decoration:none;">
+                        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.2rem;color:var(--accent-hover);">🎬 Voir le teaser</span>
+                    </a>
                     <div class="card-header">
                         <span class="edition">Shalom I</span>
                         <span class="year">2024</span>
@@ -779,6 +819,7 @@
                 location: 'Touraine · Luynes',
                 organizers: 'Anne-Clémence & Pierre-François',
                 video: 'https://www.youtube.com/embed/VzcGup8aSY0?si=IWg_d1m5WgZor3cY',
+                logo: 'https://photos.app.goo.gl/XkYLzAQ5jqQrupqy8',
                 quotes: ['"C\'est pas faux!"', '"T\'es en train de me direct"', '"Le kenal"'],
                 program: [
                     { day: 'Vendredi 07/06', items: [
