@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shalom Project | Timeline</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #141416;
+            --bg-tertiary: #1c1c1f;
+            --bg-card: rgba(28, 28, 31, 0.6);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1a6;
+            --text-muted: #6e6e73;
+            --accent-gold: #d4af37;
+            --accent-gold-light: #e8c962;
+            --accent-gold-dark: #b8962e;
+            --accent-coral: #ff6b6b;
+            --accent-teal: #00d9c0;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-active: rgba(212, 175, 55, 0.3);
+            --glow-gold: rgba(212, 175, 55, 0.15);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-elevated: 0 24px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-canvas::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 217, 192, 0.05) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 107, 107, 0.03) 0%, transparent 30%);
+            animation: bgShift 20s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, 2%) rotate(1deg); }
+            66% { transform: translate(-2%, 1%) rotate(-1deg); }
+        }
+
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        header {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-gold) 50%, var(--accent-gold-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            animation: titleFade 1s ease-out;
+        }
+
+        @keyframes titleFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            animation: titleFade 1s ease-out 0.15s both;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 40px;
+            animation: titleFade 1s ease-out 0.3s both;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 8px;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 40px 0 100px;
+        }
+
+        .timeline-track {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                var(--border-subtle) 5%, 
+                var(--accent-gold) 50%,
+                var(--border-subtle) 95%,
+                transparent 100%);
+            transform: translateX(-50%);
+        }
+
+        .timeline-track::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--glow-gold), transparent);
+            transform: translateX(-50%);
+            filter: blur(20px);
+            opacity: 0.5;
+        }
+
+        .timeline-item {
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 0 0 80px;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: itemReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .timeline-item:nth-child(1) { animation-delay: 0.4s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.5s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes itemReveal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 24px;
+            width: 12px;
+            height: 12px;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-gold);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 0 4px var(--bg-primary), 0 0 20px var(--glow-gold);
+        }
+
+        .timeline-item:hover::before {
+            transform: translateX(-50%) scale(1.4);
+            box-shadow: 0 0 0 6px var(--bg-primary), 0 0 30px var(--glow-gold);
+            border-color: var(--accent-gold-light);
+        }
+
+        .timeline-item:nth-child(odd) .card {
+            margin-right: calc(50% + 40px);
+        }
+
+        .timeline-item:nth-child(even) .card {
+            margin-left: calc(50% + 40px);
+            order: 1;
+        }
+
+        .card {
+            width: calc(50% - 60px);
+            max-width: 460px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--border-active);
+            box-shadow: var(--shadow-elevated), 0 0 60px var(--glow-gold);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .edition-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--accent-gold-dark), var(--accent-gold));
+            color: var(--bg-primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .year {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .card-location {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .card-organizers {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .card-organizers svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--accent-gold);
+        }
+
+        .card-preview {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-subtle);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .preview-media {
+            aspect-ratio: 1;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .preview-media:hover {
+            background: var(--bg-secondary);
+            transform: scale(1.05);
+        }
+
+        .preview-media svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-muted);
+        }
+
+        .card-footer {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quick-quote {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .view-more {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: gap 0.3s ease;
+        }
+
+        .card:hover .view-more {
+            gap: 10px;
+        }
+
+        .view-more svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 90%;
+            max-width: 720px;
+            max-height: 85vh;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 28px;
+            padding: 48px;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--accent-coral);
+            border-color: var(--accent-coral);
+            transform: rotate(90deg);
+        }
+
+        .modal-close svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-primary);
+        }
+
+        .modal-edition {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-gold-dark), var(--accent-gold));
+            color: var(--bg-primary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+
+        .modal-year {
+            font-family: 'Syne', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .modal-location {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-gold-light);
+            margin-bottom: 12px;
+        }
+
+        .modal-organizers {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 36px;
+            font-size: 1.05rem;
+        }
+
+        .modal-section {
+            margin-bottom: 36px;
+        }
+
+        .modal-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        .video-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .video-embed iframe,
+        .video-embed a {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .video-embed .play-btn {
+            width: 80px;
+            height: 80px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 40px var(--glow-gold);
+        }
+
+        .video-embed:hover .play-btn {
+            transform: scale(1.1);
+            box-shadow: 0 0 60px var(--glow-gold);
+        }
+
+        .video-embed .play-btn svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--bg-primary);
+            margin-left: 4px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .photo-item {
+            aspect-ratio: 1;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-item:hover {
+            background: var(--bg-primary);
+            transform: scale(1.05);
+        }
+
+        .photo-item svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--text-muted);
+        }
+
+        .video-preview {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .video-preview:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-preview::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(0, 0, 0, 0.4));
+            z-index: 1;
+        }
+
+        .video-preview .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 56px;
+            height: 56px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .video-preview:hover .play-overlay {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 8px 40px rgba(212, 175, 55, 0.6);
+        }
+
+        .video-preview .play-overlay svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--bg-primary);
+            margin-left: 3px;
+        }
+
+        .video-preview .video-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 6px;
+            z-index: 2;
+        }
+
+        .video-preview .video-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 2;
+        }
+
+        /* Video Modal */
+        .video-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .video-modal {
+            width: 90%;
+            max-width: 900px;
+            transform: scale(0.95);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .video-modal-backdrop.active .video-modal {
+            transform: scale(1);
+        }
+
+        .video-modal-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-modal-close:hover {
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+
+        .video-modal-title {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+        }
+
+        .video-player-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .video-player-wrapper iframe,
+        .video-player-wrapper a {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-player-wrapper a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            text-decoration: none;
+        }
+
+        .video-player-wrapper .play-button-large {
+            width: 80px;
+            height: 80px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 60px var(--glow-gold);
+            transition: all 0.3s ease;
+        }
+
+        .video-player-wrapper a:hover .play-button-large {
+            transform: scale(1.15);
+            box-shadow: 0 0 80px var(--glow-gold);
+        }
+
+        .video-player-wrapper .play-button-large svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--bg-primary);
+            margin-left: 4px;
+        }
+
+        .video-player-wrapper .external-link-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            padding: 10px 20px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .video-player-wrapper .external-link-hint svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .video-player-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .quotes-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quote-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 10px 18px;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-style: italic;
+            transition: all 0.3s ease;
+        }
+
+        .quote-item:hover {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-color: var(--accent-gold);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0 60px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent-gold);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .stats {
+                gap: 32px;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .timeline-track {
+                left: 24px;
+            }
+
+            .timeline-item::before {
+                left: 24px;
+            }
+
+            .timeline-item:nth-child(odd) .card,
+            .timeline-item:nth-child(even) .card {
+                margin-left: 0;
+                margin-right: 0;
+                width: 100%;
+                order: 0;
+            }
+
+            .card {
+                margin-left: 56px !important;
+                width: calc(100% - 56px) !important;
+            }
+
+            .photo-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .modal {
+                padding: 32px 24px;
+            }
+
+            .modal-year {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-canvas"></div>
+    <div class="noise-overlay"></div>
+
+    <div class="container">
+        <header>
+            <h1 class="logo">Shalom Project</h1>
+            <p class="tagline">Les Week-ends Annuels du Groupe</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Éditions</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">14</div>
+                    <div class="stat-label">Copains</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Souvenirs</div>
+                </div>
+            </div>
+        </header>
+
+        <section class="timeline">
+            <div class="timeline-track"></div>
+
+            <article class="timeline-item" data-year="2024">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="edition-badge">Shalom I</span>
+                        <span class="year">2024</span>
+                    </div>
+                    <h2 class="card-location">Touraine · Luynes</h2>
+                    <p class="card-organizers">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        Organisé par Anne-Clémence & Pierre-François
+                    </p>
+                    <div class="card-preview">
+                        <div class="video-preview" data-video="2024" data-video-url="https://www.youtube.com/embed/VzcGup8aSY0?si=IWg_d1m5WgZor3cY">
+                            <span class="video-label">Vidéo</span>
+                            <div class="play-overlay">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="preview-media"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+                        <div class="preview-media"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="quick-quote">"C'est pas faux!"</span>
+                        <span class="view-more">
+                            Voir plus
+                            <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                        </span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="timeline-item" data-year="2025">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="edition-badge">Shalom II</span>
+                        <span class="year">2025</span>
+                    </div>
+                    <h2 class="card-location">Vendée · Les Sables d'Olonne</h2>
+                    <p class="card-organizers">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        Organisé par Caroline & Jérémy
+                    </p>
+                    <div class="card-preview">
+                        <div class="video-preview" data-video="2025" data-video-url="https://www.youtube.com/embed/exQo-ULpR9o?si=YhFVe_I_dNovypyn">
+                            <span class="video-label">Vidéo</span>
+                            <div class="play-overlay">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="preview-media"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+                        <div class="preview-media"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="quick-quote">"Tocard"</span>
+                        <span class="view-more">
+                            Voir plus
+                            <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                        </span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="timeline-item" data-year="2026">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="edition-badge">Shalom III</span>
+                        <span class="year">2026</span>
+                    </div>
+                    <h2 class="card-location">Loire-Atlantique · Saint Lyphard</h2>
+                    <p class="card-organizers">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        Organisé par Coraline & Arnaud
+                    </p>
+                    <div class="card-preview">
+                        <div class="video-preview" data-video="2026" data-video-url="https://photos.app.goo.gl/KfxxJYu1NFe6KsoE9">
+                            <span class="video-label">Vidéo</span>
+                            <div class="play-overlay">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                        <div class="preview-media"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+                        <div class="preview-media"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="quick-quote">"Tocard"</span>
+                        <span class="view-more">
+                            Voir plus
+                            <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                        </span>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <footer>
+            <p>Shalom Project · 14 copains · Depuis 2024</p>
+        </footer>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal" id="modal">
+        <button class="modal-close" id="modalClose">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <div id="modalContent"></div>
+    </div>
+
+    <!-- Video Modal -->
+    <div class="video-modal-backdrop" id="videoModalBackdrop">
+        <div class="video-modal">
+            <button class="video-modal-close" id="videoModalClose">×</button>
+            <h3 class="video-modal-title" id="videoModalTitle">Vidéo Shalom 2023</h3>
+            <div class="video-player-wrapper" id="videoPlayerWrapper"></div>
+        </div>
+    </div>
+
+    <script>
+        const timelineData = {
+            '2024': {
+                edition: 'Shalom I',
+                year: '2024',
+                destination: 'Touraine · Luynes',
+                organizers: 'Anne-Clémence & Pierre-François',
+                video: 'https://www.youtube.com/embed/VzcGup8aSY0?si=IWg_d1m5WgZor3cY',
+                photos: [1,2,3,4,5,6,7,8],
+                quotes: ['"C\'est pas faux!"', '"T\'es en train de me direct"', '"Le kenal"']
+            },
+            '2025': {
+                edition: 'Shalom II',
+                year: '2025',
+                destination: 'Vendée · Les Sables d\'Olonne',
+                organizers: 'Caroline & Jérémy',
+                video: 'https://www.youtube.com/embed/exQo-ULpR9o?si=YhFVe_I_dNovypyn',
+                photos: [1,2,3,4,5,6,7,8],
+                quotes: ['"Mange tes morts"', '"Tocard"', '"C\'est pas le Texas"']
+            },
+            '2026': {
+                edition: 'Shalom III',
+                year: '2026',
+                destination: 'Loire-Atlantique · Saint Lyphard',
+                organizers: 'Coraline & Arnaud',
+                video: 'https://photos.app.goo.gl/KfxxJYu1NFe6KsoE9',
+                photos: [1,2,3,4,5,6,7,8],
+                quotes: ['"Mange tes morts"', '"Tocard"', '"C\'est pas le Texas"']
+            }
+        };
+
+        const modal = document.getElementById('modal');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalContent = document.getElementById('modalContent');
+
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.video-preview')) return;
+                const year = card.closest('.timeline-item').dataset.year;
+                openModal(year);
+            });
+        });
+
+        function openModal(year) {
+            const data = timelineData[year];
+            
+            const videoSection = data.video ? `
+                <div class="modal-section">
+                    <h3 class="modal-section-title">Vidéo</h3>
+                    <div class="video-embed">
+                        <a href="${data.video}" target="_blank" rel="noopener">
+                            <div class="play-btn">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            ` : '';
+
+            modalContent.innerHTML = `
+                <span class="modal-edition">${data.edition}</span>
+                <h2 class="modal-year">${data.year}</h2>
+                <h3 class="modal-location">${data.destination}</h3>
+                <p class="modal-organizers">
+                    <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--accent-gold);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    Organisé par ${data.organizers}
+                </p>
+
+                ${videoSection}
+
+                <div class="modal-section">
+                    <h3 class="modal-section-title">Photos</h3>
+                    <div class="photo-grid">
+                        ${data.photos.map(() => `
+                            <div class="photo-item">
+                                <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3 class="modal-section-title">Expressions & Blagues</h3>
+                    <div class="quotes-grid">
+                        ${data.quotes.map(q => `<span class="quote-item">${q}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            modalBackdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            modalBackdrop.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', closeModal);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Scroll animation for timeline items
+        const observerOptions = { threshold: 0.2, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.timeline-item').forEach(item => observer.observe(item));
+
+        // Video Modal functionality
+        const videoModalBackdrop = document.getElementById('videoModalBackdrop');
+        const videoPlayerWrapper = document.getElementById('videoPlayerWrapper');
+        const videoModalTitle = document.getElementById('videoModalTitle');
+
+        document.querySelectorAll('.video-preview').forEach(preview => {
+            preview.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const year = preview.dataset.video;
+                const videoUrl = preview.dataset.videoUrl;
+                openVideoModal(year, videoUrl);
+            });
+        });
+
+function openVideoModal(year, videoUrl) {
+            const data = timelineData[year];
+            videoModalTitle.textContent = `Vidéo ${data.edition} · ${data.destination}`;
+
+            if (videoUrl) {
+                let watchUrl = '';
+                
+                if (videoUrl.includes('youtube.com/embed/')) {
+                    const videoId = videoUrl.split('youtube.com/embed/')[1]?.split('?')[0];
+                    watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                } else if (videoUrl.includes('youtu.be/')) {
+                    watchUrl = videoUrl;
+                } else if (videoUrl.includes('v=')) {
+                    watchUrl = videoUrl;
+                } else if (videoUrl.includes('photos.app.goo.gl') || videoUrl.includes('google.com/photos')) {
+                    watchUrl = videoUrl;
+                }
+
+                if (watchUrl) {
+                    // Open in new tab - more reliable for local files
+                    window.open(watchUrl, '_blank');
+                    videoModalBackdrop.classList.remove('active');
+                    document.body.style.overflow = '';
+                    return;
+                }
+            }
+
+            videoPlayerWrapper.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">
+                    <svg viewBox="0 0 24 24" style="width:48px;height:48px;fill:var(--text-muted);margin-bottom:16px;"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Vidéo à venir...</span>
+                </div>
+            `;
+
+            videoModalBackdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVideoModal() {
+            videoModalBackdrop.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('videoModalClose').addEventListener('click', closeVideoModal);
+        videoModalBackdrop.addEventListener('click', (e) => {
+            if (e.target === videoModalBackdrop) closeVideoModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeVideoModal();
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
