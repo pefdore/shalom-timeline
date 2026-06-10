@@ -543,16 +543,77 @@
             transition: all 0.3s ease;
         }
 
-        .quote-tag:hover {
+.quote-tag:hover {
             background: var(--accent-soft);
             color: var(--accent-hover);
         }
 
-        footer {
+        /* Program Styles */
+        .program {
+            margin-top: 24px;
+        }
+
+        .program-day {
+            margin-bottom: 20px;
+        }
+
+        .program-day-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--accent-soft);
+        }
+
+        .program-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .program-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-subtle);
+            border-radius: var(--radius-sm);
+            transition: all 0.3s ease;
+        }
+
+        .program-item:hover {
+            background: var(--accent-soft);
+            transform: translateX(4px);
+        }
+
+        .program-time {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 60px;
+            padding: 4px 8px;
+            background: var(--accent-soft);
+            border-radius: 6px;
             text-align: center;
-            padding: 40px 0 60px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+        }
+
+        .program-content {
+            flex: 1;
+        }
+
+        .program-item-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .program-item-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
 
         /* Responsive */
@@ -718,7 +779,26 @@
                 location: 'Touraine · Luynes',
                 organizers: 'Anne-Clémence & Pierre-François',
                 video: 'https://www.youtube.com/embed/VzcGup8aSY0?si=IWg_d1m5WgZor3cY',
-                quotes: ['"C\'est pas faux!"', '"T\'es en train de me direct"', '"Le kenal"']
+                quotes: ['"C\'est pas faux!"', '"T\'es en train de me direct"', '"Le kenal"'],
+                program: [
+                    { day: 'Vendredi 07/06', items: [
+                        { time: 'Matin', title: 'Départ de Rennes', desc: 'Direction le Puy du Fou' },
+                        { time: '9h', title: 'Arrivée au Puy du Fou', desc: 'Journée complète au parc' },
+                        { time: 'Soir', title: 'Direction Luynes', desc: 'Propriété "La Bennerie Tours Loire Valley"' }
+                    ]},
+                    { day: 'Samedi 08/06', items: [
+                        { time: 'Matin', title: 'Matinée chill', desc: 'Relax à la maison' },
+                        { time: 'Déjeuner', title: 'Pause Vietnamienne', desc: 'Repas saveurs Vietnam' },
+                        { time: 'Après-midi', title: 'Sortie vélo', desc: ' direction château d\'Azay-le-Rideau' },
+                        { time: 'Soir', title: 'Dégustation vin', desc: 'Château de l\'Aulée' }
+                    ]},
+                    { day: 'Dimanche 09/06', items: [
+                        { time: '3h', title: 'Départ matinal', desc: 'Direction les Ballons' },
+                        { time: 'Matin', title: 'Mongolfières', desc: 'Domaine des Pierrettes - Lamantin des Vignes' },
+                        { time: '-midi', title: 'Brunch Babette', desc: 'Tours' },
+                        { time: 'Aprem', title: 'Retour Rennes', desc: 'Fin du Shalom I' }
+                    ]}
+                ]
             },
             '2025': {
                 edition: 'Shalom II',
@@ -792,10 +872,40 @@
 
         function openDetailModal(year) {
             const d = data[year];
+            
+            let programSection = '';
+            if (d.program) {
+                programSection = `
+                    <div class="detail-section">
+                        <h3 class="detail-title">Programme</h3>
+                        <div class="program">
+                            ${d.program.map(day => `
+                                <div class="program-day">
+                                    <div class="program-day-title">${day.day}</div>
+                                    <div class="program-items">
+                                        ${day.items.map(item => `
+                                            <div class="program-item">
+                                                <span class="program-time">${item.time}</span>
+                                                <div class="program-content">
+                                                    <div class="program-item-title">${item.title}</div>
+                                                    <div class="program-item-desc">${item.desc}</div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
             detailContent.innerHTML = `
                 <span class="modal-edition">${d.edition}</span>
                 <h2 class="modal-title">${d.year} · ${d.location}</h2>
                 <p class="modal-organizers">Organisé par ${d.organizers}</p>
+                
+                ${programSection}
                 
                 <div class="detail-section">
                     <h3 class="detail-title">Expressions</h3>
