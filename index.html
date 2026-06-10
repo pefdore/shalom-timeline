@@ -335,8 +335,10 @@
         /* Logo/Cover Image */
         .card-cover {
             width: 100%;
-            aspect-ratio: 16/9;
-            object-fit: cover;
+            max-height: 200px;
+            object-fit: contain;
+            object-position: center;
+            background: var(--bg-subtle);
             border-radius: var(--radius-sm);
             margin-bottom: 16px;
             cursor: pointer;
