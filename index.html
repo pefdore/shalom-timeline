@@ -129,6 +129,63 @@
             margin-top: 6px;
         }
 
+        /* Countdown */
+        .countdown {
+            background: var(--accent-soft);
+            border: 2px solid var(--accent);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .countdown-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+
+        .countdown-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .countdown-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--bg-soft);
+            padding: 12px 16px;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+
+        .countdown-item span {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .countdown-item small {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
         /* Timeline */
         .timeline {
             position: relative;
@@ -682,11 +739,21 @@
 
     <div class="container">
         <header>
+            <div class="countdown">
+                <div class="countdown-label">Prochain Shalom IV</div>
+                <div class="countdown-date">10-13 Juin 2027 · Laetitia & Matthias</div>
+                <div class="countdown-timer" id="countdown">
+                    <div class="countdown-item"><span id="days">--</span><small>jours</small></div>
+                    <div class="countdown-item"><span id="hours">--</span><small>h</small></div>
+                    <div class="countdown-item"><span id="minutes">--</span><small>min</small></div>
+                    <div class="countdown-item"><span id="seconds">--</span><small>s</small></div>
+                </div>
+            </div>
             <h1 class="logo">Shalom <span>Project</span></h1>
             <p class="tagline">Les week-ends annuels du groupe</p>
             <div class="stats">
                 <div class="stat">
-                    <div class="stat-value">3</div>
+                    <div class="stat-value">4</div>
                     <div class="stat-label">Éditions</div>
                 </div>
                 <div class="stat">
@@ -812,6 +879,32 @@
     </div>
 
     <script>
+        // Countdown to Shalom IV
+        const shalom4Date = new Date('2027-06-10T20:30:00').getTime();
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = shalom4Date - now;
+            
+            if (distance < 0) {
+                document.getElementById('countdown').innerHTML = '<div style="color:var(--accent);font-weight:600;">C\'est parti !</div>';
+                return;
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('days').textContent = days;
+            document.getElementById('hours').textContent = hours;
+            document.getElementById('minutes').textContent = minutes;
+            document.getElementById('seconds').textContent = seconds;
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
         const data = {
             '2024': {
                 edition: 'Shalom I',
