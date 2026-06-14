@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getSheetData, appendToSheet, getVotingDates, isVotingOpen } from '@/app/lib/sheets'
+import { getSheetData, appendToSheet, getVotingDates, isVotingOpen } from '@/lib/sheets'
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID
 const SHEET_NAME = 'Membres'

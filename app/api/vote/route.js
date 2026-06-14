@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { appendToSheet, updateSheetCell, getSheetData } from '@/app/lib/sheets'
+import { appendToSheet, updateSheetCell, getSheetData } from '@/lib/sheets'
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID
 const DEV_MODE = !process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT

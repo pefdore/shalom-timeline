@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getVotingDates, isVotingOpen } from '@/app/lib/sheets'
+import { getVotingDates, isVotingOpen } from '@/lib/sheets'
 
 export async function GET() {
   const { startDate, endDate } = getVotingDates()
