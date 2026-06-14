@@ -1,9 +1,25 @@
 import { google } from 'googleapis'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
+function getCredentials() {
+  if (process.env.GOOGLE_SERVICE_ACCOUNT) {
+    try {
+      return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT)
+    } catch {
+      return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT.replace(/\\n/g, '\n'))
+    }
+  }
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  const credentialsPath = path.join(__dirname, '../../google-credentials.json')
+  return JSON.parse(fs.readFileSync(credentialsPath, 'utf8'))
+}
+
 function getAuthClient() {
-  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT || '{}')
+  const credentials = getCredentials()
   return new google.auth.GoogleAuth({
     credentials,
     scopes: SCOPES,

@@ -1,6 +1,15 @@
+require('dotenv').config({ path: '.env.local', quiet: true })
 const { google } = require('googleapis')
+const fs = require('fs')
+const path = require('path')
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID
+
+const credentialsFile = process.env.GOOGLE_CREDENTIALS_FILE || 'google-credentials.json'
+const credentialsPath = path.join(__dirname, '..', credentialsFile)
+const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'))
+
+console.log('Credentials loaded from:', credentialsPath)
 
 const MEMBERS = [
   ['Nom', 'Code', 'A Voté'],
@@ -44,7 +53,6 @@ const CATEGORIES = [
 ]
 
 async function initSheet() {
-  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT)
   const auth = new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -52,49 +60,32 @@ async function initSheet() {
 
   const sheets = google.sheets({ version: 'v4', auth })
 
-  console.log('📋 Création des onglets...')
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: SPREADSHEET_ID,
-    requestBody: {
-      requests: [
-        {
-          updateSheetProperties: {
-            properties: { sheetId: 0, title: 'Membres' },
-            fields: 'title',
-          },
-        },
-        {
-          addSheet: { properties: { title: 'Votes' } },
-        },
-        {
-          addSheet: { properties: { title: 'Catégories' } },
-        },
-      ],
-    },
-  })
-
   console.log('✍️ Insertion des membres...')
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: SPREADSHEET_ID,
-    range: 'Membres!A1:C15',
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values: MEMBERS },
-  })
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Membres!A1:C15',
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: MEMBERS },
+    })
+  } catch (e) {
+    console.log('⚠️ Erreur insertion membres:', e.message)
+  }
 
   console.log('✍️ Insertion des catégories...')
   const categoriesWithHeader = [['Catégorie'], ...CATEGORIES.map(c => [c])]
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: SPREADSHEET_ID,
-    range: 'Catégories!A1:A21',
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values: categoriesWithHeader },
-  })
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Catégories!A1:A21',
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: categoriesWithHeader },
+    })
+  } catch (e) {
+    console.log('⚠️ Erreur insertion catégories:', e.message)
+  }
 
-  console.log('✅ Google Sheet initialisé avec succès!')
-  console.log('   - Onglet "Membres": Liste des participants avec codes')
-  console.log('   - Onglet "Votes": Enregistrement des votes')
-  console.log('   - Onglet "Catégories": Liste des catégories')
+  console.log('✅ Google Sheet configuré!')
 }
 
 initSheet().catch(console.error)
