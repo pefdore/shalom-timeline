@@ -66,11 +66,11 @@ export function isVotingOpen(startDate, endDate) {
 }
 
 export function getVotingDates() {
-  const year = new Date().getFullYear()
-  const weEndDate = process.env.WE_END_DATE || `${year}-06-15`
+  const weEndDate = process.env.WE_END_DATE || '2026-06-14'
   const startDate = new Date(weEndDate)
   const endDate = new Date(startDate)
-  endDate.setDate(endDate.getDate() + 3)
+  const durationDays = parseInt(process.env.VOTING_DURATION_DAYS) || 7
+  endDate.setDate(endDate.getDate() + durationDays)
   
   return {
     startDate: weEndDate,
