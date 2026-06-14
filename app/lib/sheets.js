@@ -1,0 +1,79 @@
+import { google } from 'googleapis'
+
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+function getAuthClient() {
+  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT || '{}')
+  return new google.auth.GoogleAuth({
+    credentials,
+    scopes: SCOPES,
+  })
+}
+
+export async function getSheetData(spreadsheetId, sheetName, range) {
+  const auth = getAuthClient()
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${sheetName}!${range}`,
+  })
+
+  return response.data.values || []
+}
+
+export async function appendToSheet(spreadsheetId, sheetName, values) {
+  const auth = getAuthClient()
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: `${sheetName}!A:Z`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [values] },
+  })
+}
+
+export async function updateSheetCell(spreadsheetId, sheetName, cell, value) {
+  const auth = getAuthClient()
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${sheetName}!${cell}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [[value]] },
+  })
+}
+
+export async function getAllSheetData(spreadsheetId, sheetName) {
+  const auth = getAuthClient()
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${sheetName}!A:Z`,
+  })
+
+  return response.data.values || []
+}
+
+export function isVotingOpen(startDate, endDate) {
+  const now = new Date()
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  return now >= start && now <= end
+}
+
+export function getVotingDates() {
+  const year = new Date().getFullYear()
+  const weEndDate = process.env.WE_END_DATE || `${year}-06-15`
+  const startDate = new Date(weEndDate)
+  const endDate = new Date(startDate)
+  endDate.setDate(endDate.getDate() + 3)
+  
+  return {
+    startDate: weEndDate,
+    endDate: endDate.toISOString().split('T')[0],
+  }
+}

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
+import { getSheetData, appendToSheet, getVotingDates, isVotingOpen } from '@/app/lib/sheets'
 
-// Configuration Google Sheets
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID
 const SHEET_NAME = 'Membres'
 
-// Liste des participants avec leurs codes (en prod, ça vient du sheet)
-const MEMBERS = {
+const DEV_MODE = !process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT
+
+const MEMBERS_DEV = {
   'Jeremy': { code: '0001', hasVoted: false },
   'Caroline': { code: '0002', hasVoted: false },
   'Arnaud': { code: '0003', hasVoted: false },
@@ -22,12 +23,28 @@ const MEMBERS = {
   'Anne-Clémence': { code: '0014', hasVoted: false },
 }
 
+async function getMembersFromSheet() {
+  try {
+    const data = await getSheetData(SPREADSHEET_ID, SHEET_NAME, 'A:C')
+    const members = {}
+    for (let i = 1; i < data.length; i++) {
+      const [name, code, voted] = data[i]
+      if (name) {
+        members[name] = { code: code || '', hasVoted: voted === 'TRUE' }
+      }
+    }
+    return members
+  } catch (error) {
+    console.error('Error fetching members:', error)
+    return null
+  }
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const member = searchParams.get('member')
   const code = searchParams.get('code')
 
-  // Validation basique
   if (!member || !code) {
     return NextResponse.json(
       { success: false, message: 'Paramètres manquants' },
@@ -35,30 +52,47 @@ export async function GET(request) {
     )
   }
 
-  const memberData = MEMBERS[member]
+  const { startDate, endDate } = getVotingDates()
 
-  // Membre non trouvé
+  if (!isVotingOpen(startDate, endDate)) {
+    return NextResponse.json(
+      { success: false, message: `Les votes sont fermés. Réouvre du ${startDate} au ${endDate}` },
+      { status: 403 }
+    )
+  }
+
+  let memberData = null
+  let members = null
+
+  if (DEV_MODE) {
+    memberData = MEMBERS_DEV[member]
+  } else {
+    members = await getMembersFromSheet()
+    if (members) {
+      memberData = members[member]
+    }
+  }
+
   if (!memberData) {
     return NextResponse.json(
-      { success: false, message: 'Alerte triche ! Tu n\'es pas dans la liste des copains autorises.' },
+      { success: false, message: 'Alerte triche ! Tu n\'es pas dans la liste des copains autorisés.' },
       { status: 401 }
     )
   }
 
-  // Code incorrect
   if (memberData.code !== code) {
     return NextResponse.json(
       { success: false, message: 'Alerte triche ! Ton code est aussi faux que les dés pipés de Matthias.' },
       { status: 401 }
     )
-    // A déjà voted (en mode dev, on autorise)
-    if (memberData.hasVoted) {
-      return NextResponse.json(
-        { success: false, message: 'Alerte triche ! Tu as déjà balancé tes dossiers. Reviens l\'année prochaine !' },
-        { status: 401 }
-      )
-    }
-
-    return NextResponse.json({ success: true, member })
   }
+
+  if (memberData.hasVoted) {
+    return NextResponse.json(
+      { success: false, message: 'Alerte triche ! Tu as déjà balancé tes dossiers. Reviens l\'année prochaine !' },
+      { status: 401 }
+    )
+  }
+
+  return NextResponse.json({ success: true, member })
 }

@@ -68,6 +68,18 @@ export default function Home() {
   const [votes, setVotes] = useState({})
   const [dragToken, setDragToken] = useState(null)
   const [tickerMessage, setTickerMessage] = useState('')
+  const [votingOpen, setVotingOpen] = useState(true)
+  const [votingDates, setVotingDates] = useState({ startDate: '', endDate: '' })
+
+  useEffect(() => {
+    fetch('/api/status')
+      .then(res => res.json())
+      .then(data => {
+        setVotingOpen(data.open)
+        setVotingDates({ startDate: data.startDate, endDate: data.endDate })
+      })
+      .catch(() => {})
+  }, [])
 
   // Gestion du ticker
   useEffect(() => {
@@ -193,6 +205,13 @@ export default function Home() {
           </h1>
           <p className="text-center text-shalom-textMuted mb-8">des Trophées Shalom</p>
 
+          {!votingOpen && (
+            <div className="bg-amber-50 text-amber-700 px-4 py-3 rounded-xl text-sm mb-6">
+              <p className="font-bold">⏰ Votes fermés</p>
+              <p>Les votes rouvriront du {votingDates.startDate} au {votingDates.endDate}</p>
+            </div>
+          )}
+
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-shalom-text mb-2">
@@ -252,10 +271,10 @@ export default function Home() {
                   setStep('voting')
                 }
               }}
-              disabled={!selectedMember || code.length !== 4}
+              disabled={!selectedMember || code.length !== 4 || !votingOpen}
               className="w-full py-4 bg-shalom-gold text-white font-bold rounded-xl hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Entrer dans l'Arène ⚔️
+              {votingOpen ? 'Entrer dans l\'Arène ⚔️' : 'Votes fermés 🔒'}
             </button>
           </div>
         </div>

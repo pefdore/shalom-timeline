@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "init-sheet": "node scripts/init-sheet.js",
     "lint": "next lint"
   },
   "dependencies": {
