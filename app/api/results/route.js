@@ -6,7 +6,7 @@ const DEV_MODE = !process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACC
 
 const MOCK_RESULTS = {
   'Le Grand Prix de la Soufflerie': [{ name: 'Jeremy', points: 12 }, { name: 'Toby', points: 8 }, { name: 'Matthias', points: 5 }],
-  "L'Award des Orgas': [{ name: 'Jeremy & Caroline', points: 25 }, { name: 'Arnaud & Coraline', points: 18 }, { name: 'Martin & Julie', points: 12 }],
+  "L'Award des Orgas": [{ name: 'Jeremy & Caroline', points: 25 }, { name: 'Arnaud & Coraline', points: 18 }, { name: 'Martin & Julie', points: 12 }],
 }
 
 export async function GET(request) {
