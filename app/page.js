@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import confetti from 'canvas-confetti'
 
-// Les 14 participants
+// Les 14 participants du WE 2026
 const PARTICIPANTS = [
   'Jeremy', 'Caroline', 'Arnaud', 'Coraline', 'Matthias', 'Laetitia',
   'Toby', 'Margaux', 'Martin', 'Julie', 'Damien', 'Jessica',
