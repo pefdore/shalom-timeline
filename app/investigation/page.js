@@ -1,8 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
+import dynamic from 'next/dynamic'
+
+const GazatteMap = dynamic(() => import('./GazetteMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[340px] rounded-2xl bg-gray-100 animate-pulse flex items-center justify-center text-gray-400 text-sm">
+      🗺️ Chargement de la carte...
+    </div>
+  ),
+})
 
 const MEMBRES = [
   'Jeremy', 'Caroline', 'Arnaud', 'Coraline', 'Matthias', 'Laetitia',
@@ -32,6 +42,22 @@ export default function Investigation() {
   const [setupData, setSetupData] = useState({ code: '', location: '', clues: ['', '', ''], revealDate: '', organizers: [] })
   const isOrganizer = (state?.organizers || []).includes(member)
   const [teaser, setTeaser] = useState(TEASERS[0])
+  const [mapPoints, setMapPoints] = useState([])
+  const gazetteSig = (state?.gazette || []).map((g) => g.guess).join('|')
+  useEffect(() => {
+    if (!gazetteSig) { setMapPoints([]); return }
+    const guesses = (state?.gazette || []).map((g) => g.guess)
+    fetch('/api/investigation/geocode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guesses }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setMapPoints(data.points)
+      })
+      .catch(() => {})
+  }, [gazetteSig])
 
   const refresh = useCallback(async () => {
     const params = logged ? `?member=${encodeURIComponent(member)}&code=${encodeURIComponent(code)}` : ''
@@ -283,6 +309,19 @@ export default function Investigation() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {mapPoints.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-xl p-6">
+            <h2 className="font-bold text-gray-800 mb-1">🗺️ La Map des Ratés</h2>
+            <p className="text-xs text-gray-400 mb-3">Toutes les propositions du groupe, géolocalisées. Rouge = raté, vert = trouvé. Les lieux introuvables sont dignes d'un roman.</p>
+            <GazatteMap points={mapPoints} gazette={state?.gazette || []} />
+            {mapPoints.some((p) => !p.found) && (
+              <p className="text-xs text-gray-400 mt-2">
+                ℹ️ {mapPoints.filter((p) => !p.found).length} proposition(s) introuvable(s) sur une carte — soit elles n'existent pas, soit c'est vraiment très grave.
+              </p>
+            )}
           </div>
         )}
 
