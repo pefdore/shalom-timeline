@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
-import {
-  readState, saveState, checkOrgasCode,
-} from '@/lib/investigation'
+import { saveState, checkOrgasCode } from '@/lib/investigation'
 
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { code, location, clues, revealDate } = body
+    const { code, location, clues, revealDate, organizers } = body
 
     if (!checkOrgasCode(code)) {
       return NextResponse.json(
@@ -26,8 +24,13 @@ export async function POST(request) {
       ? clues.map((c) => String(c).trim()).filter(Boolean)
       : []
 
+    const organizersArray = Array.isArray(organizers)
+      ? organizers.map((o) => String(o).trim()).filter(Boolean)
+      : []
+
     await saveState({
       location: String(location).trim(),
+      organizers: organizersArray,
       clues: cluesArray,
       revealDate: revealDate || '',
       solved: false,

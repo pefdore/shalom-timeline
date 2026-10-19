@@ -29,7 +29,8 @@ export default function Investigation() {
   const [result, setResult] = useState(null)
   const [busy, setBusy] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
-  const [setupData, setSetupData] = useState({ code: '', location: '', clues: ['', '', ''], revealDate: '' })
+  const [setupData, setSetupData] = useState({ code: '', location: '', clues: ['', '', ''], revealDate: '', organizers: [] })
+  const isOrganizer = (state?.organizers || []).includes(member)
   const [teaser, setTeaser] = useState(TEASERS[0])
 
   const refresh = useCallback(async () => {
@@ -96,6 +97,7 @@ export default function Investigation() {
           location: setupData.location,
           clues: setupData.clues.filter(Boolean),
           revealDate: setupData.revealDate,
+          organizers: setupData.organizers,
         }),
       })
       const data = await res.json()
@@ -191,6 +193,23 @@ export default function Investigation() {
             </button>
             {setupOpen && (
               <div className="mt-4 space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Qui sont les orgas de cette édition ? (ils ne pourront pas jouer)</p>
+                  <div className="flex flex-wrap gap-2">
+                    {MEMBRES.map((m) => (
+                      <button key={m} type="button"
+                        onClick={() => setSetupData((prev) => ({
+                          ...prev,
+                          organizers: prev.organizers.includes(m)
+                            ? prev.organizers.filter((o) => o !== m)
+                            : [...prev.organizers, m],
+                        }))}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition ${setupData.organizers.includes(m) ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-amber-300'}`}>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <input value={setupData.code} onChange={(e) => setSetupData({ ...setupData, code: e.target.value.replace(/\D/g, '').slice(0, 4) })}
                   type="password" placeholder="Code orgas (4 chiffres)"
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-amber-400 focus:outline-none" />
@@ -219,7 +238,11 @@ export default function Investigation() {
         {state?.hasLocation && !state.solved && !state.revealed && (
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h2 className="font-bold text-gray-800 mb-2">🎯 Ta proposition du mois</h2>
-            {alreadyPlayed ? (
+            {isOrganizer ? (
+              <div className="bg-slate-100 text-slate-600 px-4 py-4 rounded-xl text-sm">
+                🤐 T'es orga cette année, interdit de jouer ! Contente-toi de sourire mystérieusement pendant que le groupe galère.
+              </div>
+            ) : alreadyPlayed ? (
               <div className="bg-slate-100 text-slate-600 px-4 py-4 rounded-xl text-sm">
                 🔒 Essai déjà utilisé ce mois-ci. Contemple les indices et reviens le mois prochain...
               </div>
