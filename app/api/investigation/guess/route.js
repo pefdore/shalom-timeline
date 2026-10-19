@@ -28,14 +28,19 @@ export async function POST(request) {
         { status: 403 }
       )
     }
+    const [state, gazette] = await Promise.all([readState(), readGazette()])
+    if ((state.organizers || []).includes(member)) {
+      return NextResponse.json(
+        { success: false, message: '🤐 T\'es orga cette année, interdit de jouer ! Contente-toi de sourire mystérieusement.' },
+        { status: 403 }
+      )
+    }
     if (!(await checkMemberCode(member, code))) {
       return NextResponse.json(
         { success: false, message: 'Alerte triche ! Ton code est aussi faux que les alibis de Matthias.' },
         { status: 401 }
       )
     }
-
-    const [state, gazette] = await Promise.all([readState(), readGazette()])
 
     if (!state.location) {
       return NextResponse.json(

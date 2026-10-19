@@ -1,8 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
+import dynamic from 'next/dynamic'
+
+const GazatteMap = dynamic(() => import('./GazetteMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[340px] rounded-2xl bg-gray-100 animate-pulse flex items-center justify-center text-gray-400 text-sm">
+      🗺️ Chargement de la carte...
+    </div>
+  ),
+})
 
 const MEMBRES = [
   'Jeremy', 'Caroline', 'Arnaud', 'Coraline', 'Matthias', 'Laetitia',
@@ -29,8 +39,25 @@ export default function Investigation() {
   const [result, setResult] = useState(null)
   const [busy, setBusy] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
-  const [setupData, setSetupData] = useState({ code: '', location: '', clues: ['', '', ''], revealDate: '' })
+  const [setupData, setSetupData] = useState({ code: '', location: '', clues: ['', '', ''], revealDate: '', organizers: [] })
+  const isOrganizer = (state?.organizers || []).includes(member)
   const [teaser, setTeaser] = useState(TEASERS[0])
+  const [mapPoints, setMapPoints] = useState([])
+  const gazetteSig = (state?.gazette || []).map((g) => g.guess).join('|')
+  useEffect(() => {
+    if (!gazetteSig) { setMapPoints([]); return }
+    const guesses = (state?.gazette || []).map((g) => g.guess)
+    fetch('/api/investigation/geocode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guesses }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setMapPoints(data.points)
+      })
+      .catch(() => {})
+  }, [gazetteSig])
 
   const refresh = useCallback(async () => {
     const params = logged ? `?member=${encodeURIComponent(member)}&code=${encodeURIComponent(code)}` : ''
@@ -96,6 +123,7 @@ export default function Investigation() {
           location: setupData.location,
           clues: setupData.clues.filter(Boolean),
           revealDate: setupData.revealDate,
+          organizers: setupData.organizers,
         }),
       })
       const data = await res.json()
@@ -191,6 +219,23 @@ export default function Investigation() {
             </button>
             {setupOpen && (
               <div className="mt-4 space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Qui sont les orgas de cette édition ? (ils ne pourront pas jouer)</p>
+                  <div className="flex flex-wrap gap-2">
+                    {MEMBRES.map((m) => (
+                      <button key={m} type="button"
+                        onClick={() => setSetupData((prev) => ({
+                          ...prev,
+                          organizers: prev.organizers.includes(m)
+                            ? prev.organizers.filter((o) => o !== m)
+                            : [...prev.organizers, m],
+                        }))}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition ${setupData.organizers.includes(m) ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-amber-300'}`}>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <input value={setupData.code} onChange={(e) => setSetupData({ ...setupData, code: e.target.value.replace(/\D/g, '').slice(0, 4) })}
                   type="password" placeholder="Code orgas (4 chiffres)"
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-amber-400 focus:outline-none" />
@@ -219,7 +264,11 @@ export default function Investigation() {
         {state?.hasLocation && !state.solved && !state.revealed && (
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h2 className="font-bold text-gray-800 mb-2">🎯 Ta proposition du mois</h2>
-            {alreadyPlayed ? (
+            {isOrganizer ? (
+              <div className="bg-slate-100 text-slate-600 px-4 py-4 rounded-xl text-sm">
+                🤐 T'es orga cette année, interdit de jouer ! Contente-toi de sourire mystérieusement pendant que le groupe galère.
+              </div>
+            ) : alreadyPlayed ? (
               <div className="bg-slate-100 text-slate-600 px-4 py-4 rounded-xl text-sm">
                 🔒 Essai déjà utilisé ce mois-ci. Contemple les indices et reviens le mois prochain...
               </div>
@@ -260,6 +309,19 @@ export default function Investigation() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {mapPoints.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-xl p-6">
+            <h2 className="font-bold text-gray-800 mb-1">🗺️ La Map des Ratés</h2>
+            <p className="text-xs text-gray-400 mb-3">Toutes les propositions du groupe, géolocalisées. Rouge = raté, vert = trouvé. Les lieux introuvables sont dignes d'un roman.</p>
+            <GazatteMap points={mapPoints} gazette={state?.gazette || []} />
+            {mapPoints.some((p) => !p.found) && (
+              <p className="text-xs text-gray-400 mt-2">
+                ℹ️ {mapPoints.filter((p) => !p.found).length} proposition(s) introuvable(s) sur une carte — soit elles n'existent pas, soit c'est vraiment très grave.
+              </p>
+            )}
           </div>
         )}
 
