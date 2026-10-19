@@ -90,12 +90,11 @@ const timelineData = {
         { time: 'Midi', title: 'Fin', desc: 'QG Beach' }
       ]}
     ]
-  },
-  '2027': {
-    edition: 'Shalom SP',
+  },'2027': {
+    edition: 'Shalom SP · Hors Série',
     year: '2027',
     location: 'Vendée · La Millière',
-    organizers: 'Hors série',
+    organizers: 'Tout le groupe',
     video: null,
     quotes: [],
     program: [
