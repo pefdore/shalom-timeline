@@ -243,11 +243,8 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(45, 212, 191, 0.35);
         }
-        .investigation-cta.disabled {
-            background: var(--bg);
-            color: var(--text-muted);
-            cursor: not-allowed;
-            pointer-events: none;
+        .investigation-cta.hidden {
+            display: none;
         }
 
         /* Timeline */
@@ -857,9 +854,9 @@
         <div class="investigation">
             <div class="investigation-title">L'Investigation Shalom</div>
             <p>Les organisateurs ont caché le lieu du prochain week-end. Examine les indices, place ton épingle sur la carte et tente de percer le mystère.</p>
-            <span class="investigation-note" id="investigation-note">Jeu ouvert 3 mois avant le week-end</span>
+            <span class="investigation-note closed" id="investigation-note">Ouverture 3 mois avant le week-end</span>
             <br>
-            <a class="investigation-cta disabled" id="investigation-cta" href="/enquete">Accéder au jeu <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></a>
+            <a class="investigation-cta hidden" id="investigation-cta" href="/enquete">Accéder au jeu <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></a>
         </div>
 
         <section class="timeline">
@@ -989,11 +986,12 @@
             const now = Date.now();
             if (now >= opensAt) {
                 note.textContent = 'Le jeu est ouvert !';
-                cta.classList.remove('disabled');
+                note.classList.remove('closed');
+                cta.classList.remove('hidden');
             } else {
                 note.textContent = 'Ouverture 3 mois avant le week-end';
                 note.classList.add('closed');
-                cta.classList.add('disabled');
+                cta.classList.add('hidden');
             }
         }
         updateInvestigation();
