@@ -193,12 +193,12 @@ export default function Investigation() {
         <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">🕵️ L'Investigation Shalom</h1>
           {state?.hasLocation ? (
-            state.solved ? (
+            state.ranking?.length > 0 && !state.revealed ? (
               <div className="mt-2">
                 <p className="text-lg text-gray-700">
-                  🎉 <b>{state.winner}</b> a démasqué le lieu !
+                  🎉 <b>{state.winner}</b> a démasqué le lieu en premier !
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Enquête close. Le lieu reste secret jusqu'à la révélation officielle des orgas 🤐</p>
+                <p className="text-sm text-gray-500 mt-1">Mais l'enquête continue : {state.ranking.length} détective(s) ont trouvé, les autres cherchent encore... Le lieu reste secret jusqu'à la révélation des orgas 🤐</p>
               </div>
             ) : state.revealed ? (
               <p className="text-lg text-gray-700">🕵️ Mystère levé : le lieu était <b>{state.location}</b>.</p>
@@ -264,7 +264,7 @@ export default function Investigation() {
           </div>
         )}
 
-        {state?.hasLocation && !state.solved && !state.revealed && (
+        {state?.hasLocation && !state.revealed && (
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h2 className="font-bold text-gray-800 mb-2">🎯 Ta proposition du mois</h2>
             {isOrganizer ? (
@@ -292,8 +292,27 @@ export default function Investigation() {
               <div className={`mt-3 px-4 py-4 rounded-xl text-sm font-medium ${result.correct ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
                 <span className="text-2xl block mb-1">{result.emoji}</span>
                 {result.verdict}
+                {result.correct && result.rank && (
+                  <span className="block mt-2 font-bold">🏅 Tu es détective n°{result.rank} du groupe !</span>
+                )}
               </div>
             )}
+          </div>
+        )}
+
+        {state?.ranking?.length > 0 && !state.revealed && (
+          <div className="bg-white rounded-3xl shadow-xl p-6">
+            <h2 className="font-bold text-gray-800 mb-1">🏆 Le Panthéon des Détectives</h2>
+            <p className="text-xs text-gray-400 mb-3">Ils ont percé le mystère. Les autres... continuent de chercher.</p>
+            <div className="space-y-2">
+              {state.ranking.map((r, i) => (
+                <div key={i} className={`px-4 py-3 rounded-xl text-sm flex items-center gap-3 ${i === 0 ? 'bg-amber-50 border border-amber-300' : 'bg-gray-50'}`}>
+                  <span className="text-xl">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🔎'}</span>
+                  <span className="font-bold text-gray-800">{r.member}</span>
+                  <span className="text-gray-400">{r.attempts} tentative{r.attempts > 1 ? 's' : ''}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

@@ -48,15 +48,16 @@ export async function POST(request) {
         { status: 400 }
       )
     }
-    if (state.solved) {
-      return NextResponse.json(
-        { success: false, message: `Enquête close ! Le lieu était ${state.location}. Trop tard, Sherlock.` },
-        { status: 400 }
-      )
-    }
 
     const month = monthKey()
+    const alreadySolved = gazette.some((g) => g.member === member && g.correct)
     const alreadyPlayed = gazette.some((g) => g.member === member && g.month === month)
+    if (alreadySolved) {
+      return NextResponse.json(
+        { success: false, message: '🏆 Tu as déjà trouvé le lieu ! Place au classement, laisse les autres chercher.' },
+        { status: 429 }
+      )
+    }
     if (alreadyPlayed) {
       return NextResponse.json(
         { success: false, message: alreadyPlayedMsg(), alreadyPlayed: true },
@@ -66,7 +67,7 @@ export async function POST(request) {
 
     const correct = isMatch(guess, state.location)
     const verdict = correct
-      ? { emoji: '🎉', msg: "C'EST ÇA ! Dossier bouclé, légende du groupe !" }
+      ? { emoji: '🎉', msg: "C'EST ÇA ! Tu rejoins le panthéon des détectives du Shalom !" }
       : wrongVerdict(guess, member)
 
     await addGazetteEntry({
@@ -77,13 +78,14 @@ export async function POST(request) {
       verdict: `${verdict.emoji} ${verdict.msg}`,
     })
 
-    if (correct) {
-      await saveState({ solved: true, winner: member, solvedAt: new Date().toISOString() })
-    }
+    const rank = correct
+      ? gazette.filter((g) => g.correct).length + 1
+      : null
 
     return NextResponse.json({
       success: true,
       correct,
+      rank,
       verdict: verdict.msg,
       emoji: verdict.emoji,
       alreadyPlayed: false,
