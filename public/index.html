@@ -188,41 +188,14 @@
 
         /* Investigation */
         .investigation {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-        .investigation-card {
             background: var(--bg-soft);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            text-decoration: none;
-            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .investigation-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--accent);
-            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.12);
-        }
-        .investigation-card.teal {
             border: 2px solid var(--teal);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 16px;
+            margin-bottom: 32px;
+            text-align: center;
         }
-        .investigation-card.amber {
-            border: 2px solid var(--accent);
-        }
-        .investigation-tag {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 8px;
-            display: inline-block;
-        }
-        .investigation-card.teal .investigation-tag { color: var(--teal); }
-        .investigation-card.amber .investigation-tag { color: var(--accent); }
         .investigation-title {
             font-family: 'Space Grotesk', sans-serif;
             font-size: 1.2rem;
@@ -230,26 +203,51 @@
             color: var(--text);
             margin-bottom: 8px;
         }
-        .investigation-card p {
-            font-size: 0.85rem;
+        .investigation p {
+            font-size: 0.9rem;
             color: var(--text-secondary);
             line-height: 1.5;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
-        .investigation-cta {
-            font-size: 0.85rem;
+        .investigation-note {
+            display: inline-block;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--teal);
+            background: rgba(45, 212, 191, 0.1);
+            padding: 6px 12px;
+            border-radius: 999px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .investigation-note.closed {
+            color: var(--text-muted);
+            background: var(--bg);
+        }
+        .investigation-cta {
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            background: var(--teal);
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 999px;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .investigation-card.amber .investigation-cta { color: var(--accent); }
-
-        @media (max-width: 720px) {
-            .investigation {
-                grid-template-columns: 1fr;
-            }
+        .investigation-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(45, 212, 191, 0.35);
+        }
+        .investigation-cta.disabled {
+            background: var(--bg);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         /* Timeline */
@@ -845,20 +843,6 @@
             </div>
         </header>
 
-        <div class="investigation">
-            <a class="investigation-card teal" href="/enquete">
-                <span class="investigation-tag">Enquête</span>
-                <div class="investigation-title">L'Investigation Shalom</div>
-                <p>Chaque mois, les organisateurs cachent un lieu secret. Examine les indices, place ton épingle sur la carte et tente de percer le mystère.</p>
-                <span class="investigation-cta">Jouer maintenant <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></span>
-            </a>
-            <div class="investigation-card amber">
-                <span class="investigation-tag">Bientôt</span>
-                <div class="investigation-title">Ouverture du jeu des 3 mots</div>
-                <p>3 mots, un lieu, un week-end. Le jeu des 3 mots ouvre juste avant le début du week-end &mdash; affûtez vos méninges !</p>
-            </div>
-        </div>
-
         <div class="countdown">
             <div class="countdown-label">Prochain Shalom IV</div>
             <div class="countdown-date">10-13 Juin 2027 · Laetitia & Matthias</div>
@@ -868,6 +852,14 @@
                 <div class="countdown-item"><span id="minutes">--</span><small>min</small></div>
                 <div class="countdown-item"><span id="seconds">--</span><small>s</small></div>
             </div>
+        </div>
+
+        <div class="investigation">
+            <div class="investigation-title">L'Investigation Shalom</div>
+            <p>Les organisateurs ont caché le lieu du prochain week-end. Examine les indices, place ton épingle sur la carte et tente de percer le mystère.</p>
+            <span class="investigation-note" id="investigation-note">Jeu ouvert 3 mois avant le week-end</span>
+            <br>
+            <a class="investigation-cta disabled" id="investigation-cta" href="/enquete">Accéder au jeu <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></a>
         </div>
 
         <section class="timeline">
@@ -987,6 +979,24 @@
     <script>
         // Countdown to Shalom IV
         const shalom4Date = new Date('2027-06-10T20:30:00').getTime();
+
+        // Investigation opens 3 months before the week-end
+        function updateInvestigation() {
+            const note = document.getElementById('investigation-note');
+            const cta = document.getElementById('investigation-cta');
+            if (!note || !cta) return;
+            const opensAt = shalom4Date - (3 * 30.44 * 24 * 60 * 60 * 1000);
+            const now = Date.now();
+            if (now >= opensAt) {
+                note.textContent = 'Le jeu est ouvert !';
+                cta.classList.remove('disabled');
+            } else {
+                note.textContent = 'Ouverture 3 mois avant le week-end';
+                note.classList.add('closed');
+                cta.classList.add('disabled');
+            }
+        }
+        updateInvestigation();
         
         function updateCountdown() {
             const now = new Date().getTime();
