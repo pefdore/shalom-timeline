@@ -90,6 +90,25 @@ const timelineData = {
         { time: 'Midi', title: 'Fin', desc: 'QG Beach' }
       ]}
     ]
+  },
+  '2027': {
+    edition: 'Shalom SP · Hors Série',
+    year: '2027',
+    location: 'Vendée · La Millière',
+    organizers: 'À définir',
+    video: null,
+    quotes: [],
+    program: [
+      { day: 'Jeudi 31/12', items: [
+        { time: 'Soir', title: 'Réveillon du Nouvel An', desc: 'La Millière' }
+      ]},
+      { day: 'Vendredi 01/01', items: [
+        { time: 'Matin', title: 'Chill', desc: 'Repos et récupération' }
+      ]},
+      { day: 'Samedi 02/01', items: [
+        { time: 'Matin', title: 'Départ', desc: 'Fin du SP Hors Série' }
+      ]}
+    ]
   }
 }
 
