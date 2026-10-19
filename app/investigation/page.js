@@ -193,12 +193,15 @@ export default function Investigation() {
         <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">🕵️ L'Investigation Shalom</h1>
           {state?.hasLocation ? (
-            state.solved || state.revealed ? (
-              <p className="text-lg text-gray-700">
-                {state.solved
-                  ? <>🎉 <b>{state.winner}</b> a démasqué le lieu : <b>{state.location}</b> !</>
-                  : <>🕵️ Mystère levé : le lieu était <b>{state.location}</b>.</>}
-              </p>
+            state.solved ? (
+              <div className="mt-2">
+                <p className="text-lg text-gray-700">
+                  🎉 <b>{state.winner}</b> a démasqué le lieu !
+                </p>
+                <p className="text-sm text-gray-500 mt-1">Enquête close. Le lieu reste secret jusqu'à la révélation officielle des orgas 🤐</p>
+              </div>
+            ) : state.revealed ? (
+              <p className="text-lg text-gray-700">🕵️ Mystère levé : le lieu était <b>{state.location}</b>.</p>
             ) : (
               <p className="text-gray-500">Un lieu est scellé. {state.attempts} tentatives déjà gravées dans la Gazette...</p>
             )
@@ -312,10 +315,10 @@ export default function Investigation() {
           </div>
         )}
 
-        {mapPoints.length > 0 && (
+        {state?.hasLocation && mapPoints.length > 0 && (
           <div className="bg-white rounded-3xl shadow-xl p-6">
             <h2 className="font-bold text-gray-800 mb-1">🗺️ La Map des Ratés</h2>
-            <p className="text-xs text-gray-400 mb-3">Toutes les propositions du groupe, géolocalisées. Rouge = raté, vert = trouvé. Les lieux introuvables sont dignes d'un roman.</p>
+            <p className="text-xs text-gray-400 mb-3">Toutes les propositions ratées du groupe, géolocalisées avec amour. Clique sur les marqueurs rouges pour rigoler. Le vrai lieu, lui, reste planqué quelque part...</p>
             <GazatteMap points={mapPoints} gazette={state?.gazette || []} />
             {mapPoints.some((p) => !p.found) && (
               <p className="text-xs text-gray-400 mt-2">

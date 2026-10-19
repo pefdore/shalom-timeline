@@ -67,7 +67,7 @@ export async function POST(request) {
     const correct = isMatch(guess, state.location)
     const verdict = correct
       ? { emoji: '🎉', msg: "C'EST ÇA ! Dossier bouclé, légende du groupe !" }
-      : wrongVerdict(guess)
+      : wrongVerdict(guess, member)
 
     await addGazetteEntry({
       member,
