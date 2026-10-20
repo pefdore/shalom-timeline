@@ -78,11 +78,11 @@ export default function Palmares() {
         </div>
 
         {palmares.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">👑 Classement général</h2>
+          <div className="aw-card p-6 mb-6">
+            <h2 className="aw-title text-xl text-gray-800 mb-4">👑 Classement général</h2>
             <div className="space-y-2">
               {palmares.slice(0, 10).map((p, idx) => (
-                <div key={p.name} className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 slide-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                <div key={p.name} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 slide-up" style={{ animationDelay: `${idx * 50}ms` }}>
                   <span className="w-7 text-center font-bold text-gray-400">{p.rank}</span>
                   <span className="font-semibold text-gray-700 flex-1">{p.name}</span>
                   <span className="text-sm whitespace-nowrap">{p.gold > 0 && `🥇×${p.gold} `}{p.silver > 0 && `🥈×${p.silver} `}{p.bronze > 0 && `🥉×${p.bronze}`}</span>
@@ -94,13 +94,13 @@ export default function Palmares() {
         )}
 
         {sortedCategories.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-xl p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">🎊 Podiums par catégorie</h2>
+          <div className="aw-card p-6">
+            <h2 className="aw-title text-xl text-gray-800 mb-4">🎊 Podiums par catégorie</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {sortedCategories.map(([category, winners]) => {
                 const cat = CATEGORIES.find(c => c.title === category)
                 return (
-                  <div key={category} className="bg-gray-50 rounded-2xl p-4 hover:shadow-md transition-shadow">
+                  <div key={category} className="bg-gray-50 border border-gray-100 rounded-2xl p-4 hover:shadow-md transition-shadow">
                     <p className="text-sm font-semibold text-gray-700 mb-2">
                       {cat ? `${cat.emoji} ` : '🏅 '}{category}
                     </p>
@@ -117,9 +117,9 @@ export default function Palmares() {
         )}
 
         {!loading && sortedCategories.length === 0 && (
-          <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
+          <div className="aw-card p-8 text-center">
             <p className="text-gray-500">Aucun vote pour l&apos;instant. Sois la première légende à voter ! 🎉</p>
-            <Link href="/awards" className="inline-block mt-4 px-6 py-3 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600">
+            <Link href="/awards" className="aw-btn aw-btn-primary inline-block mt-4 px-6 py-3">
               Voter maintenant ⚔️
             </Link>
           </div>

@@ -12,12 +12,12 @@ const PARTICIPANTS = [
 ]
 
 const PHASES = [
-  { label: 'Souvenirs', emoji: '💛', hint: 'Ce qui nous a fait rire et vibrer' },
+  { label: 'Journées', emoji: '☀️', hint: 'Le meilleur du jour' },
   { label: 'Talents', emoji: '✨', hint: 'Ce que chacun·e fait de magique' },
   { label: 'Piquant léger', emoji: '🌶️', hint: 'Un petit pic, avec beaucoup d’amour' },
   { label: 'Grand Final', emoji: '🏆', hint: 'Les prix qui comptent vraiment' },
 ]
-const PHASE_OF = (id) => (id <= 10 ? 0 : id <= 20 ? 1 : id <= 23 ? 2 : 3)
+const PHASE_OF = (id) => (id <= 8 ? 0 : id <= 14 ? 1 : id <= 18 ? 2 : 3)
 
 const PROGRESS_MESSAGES = [
   { threshold: 0, message: '🎉 C’est parti ! Prends ton temps, il n’y a pas de mauvais vote.' },
@@ -202,21 +202,22 @@ export default function Awards() {
 
   if (step === 'login') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white">
-        <header className="py-6 text-center px-4">
-          <Link href="/" className="inline-flex items-center text-amber-600 hover:text-amber-700">
+      <div className="min-h-screen aw-bg relative">
+        <header className="py-6 text-center px-4 relative z-10">
+          <Link href="/" className="inline-flex items-center text-amber-600 hover:text-amber-700 text-sm">
             ← Retour à l'accueil
           </Link>
         </header>
-        <div className="max-w-md mx-auto px-4 pb-12">
-          <div className="bg-white rounded-3xl shadow-xl p-8 slide-up">
-            <div className="text-center mb-4">
+        <div className="max-w-md mx-auto px-4 pb-12 relative z-10">
+          <div className="aw-card p-8 slide-up">
+            <div className="text-center mb-6">
               <div className="text-6xl mb-3 float-gentle">🏆</div>
-              <h1 className="text-3xl font-bold text-center text-gray-800 mb-1">Le Panthéon</h1>
-              <p className="text-center text-gray-500">des Trophées Shalom</p>
+              <p className="aw-kicker mb-2">Shalom Project</p>
+              <h1 className="aw-title text-3xl text-gray-800 mb-1">Le Panthéon</h1>
+              <p className="text-center text-gray-500 text-sm">des Trophées Shalom</p>
             </div>
             <p className="text-center text-sm text-gray-400 mb-8 italic">
-              28 trophées pour revivre le week-end. Ici, on célèbre tout le monde : chaque podium est un câlin. 💛
+              20 trophées pour revivre le week-end. On célèbre tout le monde : chaque podium est un câlin. 💛
             </p>
             {!votingOpen && (
               <div className="bg-amber-50 text-amber-700 px-4 py-3 rounded-xl text-sm mb-6 fade-in">
@@ -250,7 +251,7 @@ export default function Awards() {
                   else { setError(data.message || 'Code invalide'); play('error') }
                 } catch { setStep('voting') }
               }} disabled={!selectedMember || code.length !== 4 || !votingOpen}
-                className="w-full py-4 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100">
+                className="aw-btn aw-btn-primary w-full py-4 disabled:opacity-50 disabled:hover:transform-none disabled:hover:shadow-none">
                 {votingOpen ? 'Entrer dans l\'Arène ⚔️' : 'Votes fermés 🔒'}
               </button>
             </div>
@@ -271,8 +272,8 @@ export default function Awards() {
     const votedCategories = Object.keys(votes).length
 
     return (
-      <div className="min-h-screen bg-yellow-50">
-        <div className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+      <div className="min-h-screen aw-bg relative">
+        <div className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur border-b border-gray-100 z-50">
           <div className="max-w-4xl mx-auto px-4 py-3">
             <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
               <div className="flex items-center gap-1">
@@ -307,10 +308,10 @@ export default function Awards() {
             <div className="flex justify-center items-end gap-4 mb-4">
               {[2, 3, 1].map((rank) => {
                 const occupant = Object.keys(categoryVotes).find(p => categoryVotes[p] === rank)
-                const base = rank === 3 ? 'w-28 h-[140px] from-yellow-400 to-yellow-300' : rank === 2 ? 'w-24 h-[100px] from-gray-300 to-gray-200' : 'w-24 h-[70px] from-orange-300 to-orange-200'
+                const base = rank === 3 ? 'w-28 h-[140px] aw-podium-gold' : rank === 2 ? 'w-24 h-[100px] aw-podium-silver' : 'w-24 h-[70px] aw-podium-bronze'
                 return (
                   <div key={rank}
-                    className={`${base} bg-gradient-to-t rounded-t-lg flex flex-col items-center justify-end pb-2 cursor-pointer transition-all duration-200 ${dragOverRank === rank ? 'scale-110 ring-4 ring-amber-300 brightness-110' : ''} ${justDroppedRank === rank ? 'podium-pop' : ''}`}
+                    className={`${base} aw-podium-step flex flex-col items-center justify-end pb-2 cursor-pointer transition-all duration-200 ${dragOverRank === rank ? 'scale-110 ring-4 ring-amber-300 brightness-105' : ''} ${justDroppedRank === rank ? 'podium-pop' : ''}`}
                     onDragOver={(e) => handleDragOver(e, rank)}
                     onDragLeave={() => handleDragLeave(rank)}
                     onDrop={(e) => handleDrop(e, rank)}>
@@ -336,7 +337,7 @@ export default function Awards() {
                   const isOnPodium = participant in categoryVotes
                   return (
                     <div key={participant} draggable={!isOnPodium} onDragStart={(e) => handleDragStart(e, participant)}
-                      className={`token px-4 py-2 rounded-full font-medium text-sm ${isOnPodium ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white shadow-md hover:shadow-lg hover:scale-105 cursor-grab'} ${dragToken === participant ? 'dragging' : ''}`}>
+                      className={`token aw-chip px-4 py-2 font-medium text-sm ${isOnPodium ? 'aw-chip-on cursor-not-allowed hover:transform-none hover:shadow-none' : 'cursor-grab'} ${dragToken === participant ? 'dragging' : ''}`}>
                       {participant}
                     </div>
                   )
@@ -347,19 +348,19 @@ export default function Awards() {
             <div className="flex flex-wrap justify-center gap-3">
               {!isLast && (
                 <button onClick={() => setCurrentCategory(prev => prev + 1)}
-                  className="px-6 py-3 text-gray-500 rounded-full hover:bg-gray-200 transition-all text-sm font-medium">
+                  className="aw-btn aw-btn-ghost px-6 py-3 text-sm">
                   Passer cette catégorie →
                 </button>
               )}
               {(canContinue || (!isLast && Object.keys(categoryVotes).length === 0)) && (
                 <button onClick={() => isLast ? submitVotes() : setCurrentCategory(prev => prev + 1)}
-                  className="px-8 py-4 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600 transition-all hover:scale-105 shadow-lg">
+                  className="aw-btn aw-btn-primary px-8 py-4">
                   {isLast ? 'Découvrir le palmarès 🎉' : <>Suivant <span className="ml-2">➡️</span></>}
                 </button>
               )}
               {currentCategory > 0 && (
                 <button onClick={() => setCurrentCategory(prev => Math.max(prev - 1, 0))}
-                  className="px-6 py-3 text-gray-500 rounded-full hover:bg-gray-200 transition-all text-sm font-medium">
+                  className="aw-btn aw-btn-ghost px-6 py-3 text-sm">
                   ← Revenir
                   {Object.keys(categoryVotes).length > 0 && ' et modifier'}
                 </button>
@@ -368,9 +369,9 @@ export default function Awards() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white py-2 overflow-hidden">
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur text-white py-2 overflow-hidden">
           <div className="whitespace-nowrap animate-pulse">
-            <span className="mx-4">{tickerMessage}</span>
+            <span className="mx-4 text-sm text-gray-200">{tickerMessage}</span>
           </div>
         </div>
       </div>
@@ -384,14 +385,14 @@ export default function Awards() {
     const topCats = Object.entries(podiums).slice(0, 6)
 
     return (
-      <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white">
-        <div className="max-w-3xl mx-auto px-4 py-10">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 text-center slide-up">
+      <div className="min-h-screen aw-bg relative">
+        <div className="max-w-3xl mx-auto px-4 py-10 relative z-10">
+          <div className="aw-card p-8 text-center slide-up">
             <div className="text-6xl mb-6">{celebration ? '🎊' : '🏆'}</div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Verdicts Envoyés !</h1>
             <p className="text-gray-500 mb-2">Merci d'avoir participé au Panthéon des Trophées</p>
             <p className="text-sm text-gray-400 mb-8">Résultat garanti : 14 gagnant·e·s et zéro perdant·e. 💛</p>
-            <div className="bg-amber-50 rounded-2xl p-6 mb-8">
+            <div className="bg-[#fdf6e3] rounded-2xl p-6 mb-8">
               <p className="text-sm text-gray-500 mb-2">Ton profil de votant</p>
               <p className="text-4xl mb-2">{profile.emoji}</p>
               <p className="text-2xl font-bold text-amber-600">{profile.label}</p>
@@ -399,7 +400,7 @@ export default function Awards() {
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-xl p-6 mb-6 mt-6">
+          <div className="aw-card p-6 mb-6 mt-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">📊 Palmarès live</h2>
               <span className="flex items-center gap-1 text-xs text-gray-400">
@@ -422,8 +423,8 @@ export default function Awards() {
           </div>
 
           {topCats.length > 0 && (
-            <div className="bg-white rounded-3xl shadow-xl p-6 mb-8">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">🌟 Premiers podiums</h2>
+            <div className="aw-card p-6 mb-8">
+              <h2 className="aw-title text-xl text-gray-800 mb-4">🌟 Premiers podiums</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 {topCats.map(([category, winners]) => (
                   <div key={category} className="bg-gray-50 rounded-2xl p-4">
@@ -439,7 +440,7 @@ export default function Awards() {
             </div>
           )}
 
-          <div className="bg-white rounded-3xl shadow-xl p-6 mb-8 text-center">
+          <div className="aw-card p-6 mb-8 text-center">
             <p className="text-sm text-gray-500">Le palmarès complet se dévoilera au gîte 🏡</p>
             <p className="text-sm text-gray-400 mt-1">En attendant : tu nous as déjà donné envie de revenir l'année prochaine. 💛</p>
             <div className="space-y-3 text-sm text-gray-500 mt-6">
@@ -449,7 +450,7 @@ export default function Awards() {
             </div>
           </div>
 
-          <Link href="/" className="block w-full py-4 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-900 text-center">
+          <Link href="/" className="aw-btn block w-full py-4 bg-gray-800 text-white rounded-full hover:bg-gray-900 text-center">
             Retour à l'accueil
           </Link>
         </div>

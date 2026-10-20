@@ -152,3 +152,73 @@ body {
   100% { transform: scale(1); }
 }
 .count-beat { animation: count-beat 0.35s ease-out; }
+
+/* ===== Awards design system (aligned with index.html) ===== */
+.aw-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+.aw-card:hover { box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12); }
+.aw-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.aw-kicker {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+.aw-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.aw-btn-primary {
+  background: #c9a227;
+  color: #fff;
+  border-radius: 999px;
+}
+.aw-btn-primary:hover {
+  background: #b8922a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(201, 162, 39, 0.35);
+}
+.aw-btn-ghost {
+  color: #5c5c5c;
+  border-radius: 999px;
+}
+.aw-btn-ghost:hover { background: #f1f3f4; }
+.aw-chip {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+.aw-chip:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); border-color: #c9a227; }
+.aw-chip-on { background: #f1f3f4; color: #9ca3af; border-color: #f1f3f4; box-shadow: none; }
+.aw-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(201, 162, 39, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(45, 212, 191, 0.04) 0%, transparent 40%);
+}
+.aw-podium-step {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  background: #fff;
+}
+.aw-podium-gold { background: linear-gradient(180deg, #fdf6e3 0%, #ffffff 100%); border-color: #c9a227; }
+.aw-podium-silver { background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%); }
+.aw-podium-bronze { background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%); }
