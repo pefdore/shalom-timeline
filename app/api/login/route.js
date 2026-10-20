@@ -75,21 +75,21 @@ export async function GET(request) {
 
   if (!memberData) {
     return NextResponse.json(
-      { success: false, message: 'Alerte triche ! Tu n\'es pas dans la liste des copains autorisés.' },
+      { success: false, message: 'Hmm, ce prénom n\'est pas sur la liste des copains. Vérifie l\'orthographe !' },
       { status: 401 }
     )
   }
 
   if (memberData.code !== code) {
     return NextResponse.json(
-      { success: false, message: 'Alerte triche ! Ton code est aussi faux que les dés pipés de Matthias.' },
+      { success: false, message: 'Ce code ne correspond pas... Petit indice : c\'est ton numéro d\'ordre dans la liste !' },
       { status: 401 }
     )
   }
 
   if (memberData.hasVoted) {
     return NextResponse.json(
-      { success: false, message: 'Alerte triche ! Tu as déjà balancé tes dossiers. Reviens l\'année prochaine !' },
+      { success: false, message: 'Tu as déjà voté, merciiii ! Ton palmarès t\'attend sur la page Palmarès. 🏆' },
       { status: 401 }
     )
   }
