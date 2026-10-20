@@ -1,31 +1,9 @@
 import { NextResponse } from 'next/server'
-import { appendToSheet, updateSheetCell, getSheetData } from '@/lib/sheets'
+import { appendToSheet, getSheetData } from '@/lib/sheets'
+import { CATEGORIES, categoryTitleById, buildPodiums, tallyRows } from '@/lib/awards'
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID
 const DEV_MODE = !process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT
-
-const CATEGORIES = [
-  { id: 1, emoji: '💨', title: 'Le Grand Prix de la Soufflerie' },
-  { id: 2, emoji: '💤', title: 'Sommeil Sacrifié' },
-  { id: 3, emoji: '☕', title: "L'Award de la Marmotte" },
-  { id: 4, emoji: '🏃‍♂️', title: 'Le Poumon d\'Or' },
-  { id: 5, emoji: '🃏', title: 'Le MVP des Jeux de Société' },
-  { id: 6, emoji: '🍳', title: 'Le Cordon Bleu' },
-  { id: 7, emoji: '🧼', title: 'La Fée du Logis' },
-  { id: 8, emoji: '🚗', title: 'Le Chauffeur de l\'Ombre' },
-  { id: 9, emoji: '💬', title: 'La Machine à Private Jokes' },
-  { id: 10, emoji: '🎧', title: 'Le DJ Moisi' },
-  { id: 11, emoji: '🍻', title: 'Le Pilier de Comptoir' },
-  { id: 12, emoji: '👑', title: 'Le Drama King/Queen' },
-  { id: 13, emoji: '😂', title: 'Le Rire Contagieux' },
-  { id: 14, emoji: '🩹', title: 'La Victime du Malentendu' },
-  { id: 15, emoji: '🤥', title: "L'Award de la Mauvaise Foi" },
-  { id: 16, emoji: '🔍', title: 'Où est mon... ?' },
-  { id: 17, emoji: '💼', title: 'Le VRP d\'un produit random' },
-  { id: 18, emoji: '🩴', title: 'Le Fashion Crime' },
-  { id: 19, emoji: '🕵️‍♂️', title: 'Le Nostradamus du Groupe' },
-  { id: 20, emoji: '🥇', title: 'L\'Award des Orgas' },
-]
 
 export async function POST(request) {
   try {
@@ -41,19 +19,24 @@ export async function POST(request) {
 
     if (DEV_MODE) {
       console.log(`💾 Votes de ${member}:`, JSON.stringify(votes, null, 2))
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Votes enregistrés (mode développement)' 
+      return NextResponse.json({
+        success: true,
+        message: 'Votes enregistrés (mode développement). Merci pour ta contribution ! 💛'
       })
     }
 
+    const validCategoryIds = new Set(CATEGORIES.map(c => c.id))
+
     for (const [categoryId, categoryVotes] of Object.entries(votes)) {
-      const category = CATEGORIES.find(c => c.id === parseInt(categoryId))
-      const categoryTitle = category ? category.title : `Catégorie ${categoryId}`
-      
+      const id = parseInt(categoryId)
+      if (!validCategoryIds.has(id)) continue
+
+      const categoryTitle = categoryTitleById(id)
       const sortedVotes = Object.entries(categoryVotes)
         .sort((a, b) => b[1] - a[1])
         .map(([name, points]) => `${name}:${points}`)
+
+      if (sortedVotes.length === 0) continue
 
       const voteData = [
         member,
@@ -65,9 +48,10 @@ export async function POST(request) {
       await appendToSheet(SPREADSHEET_ID, 'Votes', voteData)
     }
 
-    await updateSheetCell(SPREADSHEET_ID, 'Membres', 'C2', 'TRUE')
-
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      message: 'Votes enregistrés. Le gîte te dit merci ! 🎉'
+    })
   } catch (error) {
     console.error('Erreur vote:', error)
     return NextResponse.json(
@@ -84,35 +68,13 @@ export async function GET() {
 
   try {
     const data = await getSheetData(SPREADSHEET_ID, 'Votes', 'A:D')
-    
-    const results = {}
-    
-    for (let i = 1; i < data.length; i++) {
-      const [voter, category, voteString] = data[i]
-      if (!category || !voteString) continue
+    const winners = buildPodiums(tallyRows(data))
 
-      if (!results[category]) {
-        results[category] = {}
-      }
-
-      const votes = voteString.split(', ').forEach(v => {
-        const [name, points] = v.split(':')
-        if (name && points) {
-          if (!results[category][name]) {
-            results[category][name] = 0
-          }
-          results[category][name] += parseInt(points)
-        }
-      })
-    }
-
-    const winners = {}
-    for (const [category, votes] of Object.entries(results)) {
-      const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1])
-      winners[category] = sorted.slice(0, 3).map(([name, points]) => ({ name, points }))
-    }
-
-    return NextResponse.json({ success: true, winners })
+    return NextResponse.json({
+      success: true,
+      winners,
+      message: 'Rappel : ici, même la 3e place reçoit des applaudissements. 👏'
+    })
   } catch (error) {
     console.error('Erreur getting results:', error)
     return NextResponse.json(

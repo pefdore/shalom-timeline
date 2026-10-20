@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
+import { CATEGORIES, MEDALS, POINTS_BY_RANK } from '@/lib/awards'
 
 const PARTICIPANTS = [
   'Jeremy', 'Caroline', 'Arnaud', 'Coraline', 'Matthias', 'Laetitia',
@@ -10,51 +11,56 @@ const PARTICIPANTS = [
   'Pierre-François', 'Anne-Clémence'
 ]
 
-const CATEGORIES = [
-  { id: 1, emoji: '💨', title: 'Le Grand Prix de la Soufflerie', desc: 'Celui qui a confondu le gîte avec un site de production de gaz vert et d\'éolienne humaine.' },
-  { id: 2, emoji: '💤', title: 'Sommeil Sacrifié', desc: 'Le gardien de la nuit, celui qui refuse de voir le week-end se terminer.' },
-  { id: 3, emoji: '☕', title: 'L\'Award de la Marmotte', desc: 'Le fantôme du matin. Disparu après minuit, réapparu quand le café est déjà froid.' },
-  { id: 4, emoji: '🏃‍♂️', title: 'Le Poumon d\'Or', desc: 'L\'aventurier du grand air qui court un trail à 8h du mat sous la pluie.' },
-  { id: 5, emoji: '🃏', title: 'Le MVP des Jeux de Société', desc: 'Le stratège de génie, le tricheur magnifique, ou celui qui n\'a pas compris les règles.' },
-  { id: 6, emoji: '🍳', title: 'Le Cordon Bleu', desc: 'Le maître absolu des braises ou des fourneaux.' },
-  { id: 7, emoji: '🧼', title: 'La Fée du Logis', desc: 'Le héros de l\'ombre qui vide le lave-vaisselle et ramasse les bouteilles.' },
-  { id: 8, emoji: '🚗', title: 'Le Chauffeur de l\'Ombre', desc: 'Sam le survivant, d\'une patience d\'ange face aux pires copilotes.' },
-  { id: 9, emoji: '💬', title: 'La Machine à Private Jokes', desc: 'Le sniper officiel de la punchline de l\'année.' },
-  { id: 10, emoji: '🎧', title: 'Le DJ Moisi', desc: 'Le criminel du Bluetooth qui coupe un son incroyable à 2h du mat.' },
-  { id: 11, emoji: '🍻', title: 'Le Pilier de Comptoir', desc: 'Celui qui n\'a pas bougé de sa chaise haute mais tout le monde est venu.' },
-  { id: 12, emoji: '👑', title: 'Le Drama King/Queen', desc: 'Celui pour qui une piqûre de moustique devient un récit digne d\'Hollywood.' },
-  { id: 13, emoji: '😂', title: 'Le Rire Contagieux', desc: 'Celui dont le rire déclenche des fous rires collectifs par effet domino.' },
-  { id: 14, emoji: '🩹', title: 'La Victime du Malentendu', desc: 'Le chat noir du week-end (glisse dans la boue, se trompe de chambre).' },
-  { id: 15, emoji: '🤥', title: 'L\'Award de la Mauvaise Foi', desc: 'Le Calimero qui accuse les dés d\'être pipés ou le GPS d\'avoir menti.' },
-  { id: 16, emoji: '🔍', title: 'Où est mon... ?', desc: 'Le distrait chronique qui passe 48h à chercher son téléphone ou ses lunettes.' },
-  { id: 17, emoji: '💼', title: 'Le VRP d\'un produit random', desc: 'Le monomaniaque qui a découvert une appli et veut convaincre tout le monde.' },
-  { id: 18, emoji: '🩴', title: 'Le Fashion Crime', desc: 'Le roi du confort absolu (claquettes/chaussettes, vieux pull élimé).' },
-  { id: 19, emoji: '🕵️‍♂️', title: 'Le Nostradamus du Groupe', desc: 'L\'enquêteur qui analyse chaque indice pour deviner le lieu secret.' },
-  { id: 20, emoji: '🥇', title: 'L\'Award des Orgas', desc: 'Le vote ultime pour noter le couple d\'orgas (ils sont d\'office 1ers).' },
-]
+const RANK_LABELS = ['🥇 1re place · 3 pts', '🥈 2e place · 2 pts', '🥉 3e place · 1 pt']
 
 const PROGRESS_MESSAGES = [
-  { threshold: 0, message: '🎯 L\'échauffement commence... Que la force soit avec toi !' },
-  { threshold: 10, message: '🌡aOn entre dans le vif du sujet !' },
-  { threshold: 25, message: '🔥 Échauffement des esprits...' },
-  { threshold: 40, message: '💪 La moitié du gîte est habillée pour l\'hiver.' },
-  { threshold: 50, message: '⚖️ Attention, les amitiés se brisent à ce stade !' },
-  { threshold: 65, message: '🤔 Tu commences à avoir des préférences, hein ?' },
-  { threshold: 75, message: '🎭 Les masques tombent, les votes aussi !' },
-  { threshold: 90, message: '🏆 Plus que quelques décisions cruciales...' },
-  { threshold: 100, message: '✨ Presque là, dernier sprint vers la glory !' },
+  { threshold: 0, message: '🎉 C\'est parti ! Prends ton temps, il n\'y a pas de mauvais vote.' },
+  { threshold: 10, message: '☕ On s\'échauffe en douceur, comme un bon café du matin.' },
+  { threshold: 25, message: '🔥 Tu es dans le rythme ! Le gîte est déjà fier de toi.' },
+  { threshold: 40, message: '💪 Plus d\'un tiers de la route. Les trophées se sentent observés.' },
+  { threshold: 50, message: '⚖️ La moitié ! Rappel : ici, on vote avec le cœur ET le rire.' },
+  { threshold: 65, message: '🌟 Tes choix sont beaux. Non, vraiment, ils le sont.' },
+  { threshold: 75, message: '🎭 Les podiums se remplissent, les souvenirs aussi !' },
+  { threshold: 90, message: '🏆 Dernière ligne droite, tu es une légende de la persévérance.' },
+  { threshold: 100, message: '✨ Dernière catégorie ! Encore un effort, tout le groupe t\'applaudit.' },
 ]
 
 const TICKER_PHRASES = [
-  'FLASH: Un vote anonyme vient de propulser {name} en tête !',
-  'MÉTÉO: Nuage de methane suspect détecté au-dessus du salon...',
-  'RUMEUR: {name} aurait triché en votant 3 fois pour {name2}...',
-  'BREAKING: {name} surprise en train de voter pour {name2} !',
-  'INFO: Le coffee-shop local lance une offre spéciale "voteurs réguliers"',
-  'EXCLUSIF: {name} hésite encore entre {name2} et {name3}...',
-  'ALERTE: {name} semble avoir une préférence secrète pour {name2} !',
-  'SPORT: {name} mène la course aux trophées, {name2} talonne !',
+  'FLASH : {name} vient de voter avec le cœur, le gîte est fier !',
+  'MÉTÉO SHALOM : ensoleillé avec 100% de chances de rires ce week-end.',
+  'RUMEUR : {name} et {name2} auraient ri en même temps à 3 km de distance.',
+  'BREAKING : {name} vient de recevoir 3 compliments virtuels pour sa gentillesse.',
+  'INFO : le coffee-shop local déclare le week-end « officiellement excellent ».',
+  'EXCLUSIF : {name} hésite entre {name2} et... {name3}. Décision impossible.',
+  'ALERTE BONHEUR : le gîte a atteint un niveau record de bienveillance.',
+  'SPORT : {name} mène la course aux sourires, {name2} talonne avec panache.',
 ]
+
+const VOTER_PROFILES = [
+  {
+    key: 'generous',
+    label: 'Le Cœur Sur la Main',
+    blurb: 'Tu aimes tout le monde et le week-end le sait.',
+    emoji: '💛',
+  },
+  {
+    key: 'loyal',
+    label: 'Le Pilier du Groupe',
+    blurb: 'Fidèle en amitié comme au podium. Chapeau bas.',
+    emoji: '🗿',
+  },
+  {
+    key: 'adventurer',
+    label: 'L\'Explorateur des Talents',
+    blurb: 'Tu vois le meilleur chez chacun·e, même dans la cave.',
+    emoji: '🧭',
+  },
+]
+
+function pickRandom(arr, exclude = []) {
+  const pool = arr.filter(x => !exclude.includes(x))
+  return pool[Math.floor(Math.random() * pool.length)] || arr[0]
+}
 
 export default function Awards() {
   const [step, setStep] = useState('login')
@@ -79,13 +85,10 @@ export default function Awards() {
 
     const interval = setInterval(() => {
       const phrase = TICKER_PHRASES[Math.floor(Math.random() * TICKER_PHRASES.length)]
-      const randomName = PARTICIPANTS[Math.floor(Math.random() * PARTICIPANTS.length)]
-      const randomName2 = PARTICIPANTS[Math.floor(Math.random() * PARTICIPANTS.length)]
-      const randomName3 = PARTICIPANTS[Math.floor(Math.random() * PARTICIPANTS.length)]
       setTickerMessage(phrase
-        .replace(/{name}/g, randomName)
-        .replace(/{name2}/g, randomName2)
-        .replace(/{name3}/g, randomName3))
+        .replace(/{name}/g, () => pickRandom(PARTICIPANTS))
+        .replace(/{name2}/g, () => pickRandom(PARTICIPANTS))
+        .replace(/{name3}/g, () => pickRandom(PARTICIPANTS)))
     }, 4000)
     return () => clearInterval(interval)
   }, [])
@@ -105,22 +108,15 @@ export default function Awards() {
     if (!dragToken) return
     const categoryId = CATEGORIES[currentCategory].id
     const currentVotes = votes[categoryId] || {}
-    const existingEntry = Object.entries(currentVotes).find(([p, r]) => p === dragToken && r !== rank)
-    if (existingEntry) {
-      const newVotes = { ...votes }
-      delete newVotes[categoryId][existingEntry[0]]
-      setVotes(newVotes)
+    const newCategoryVotes = { ...currentVotes }
+
+    for (const [p, r] of Object.entries(currentVotes)) {
+      if (p === dragToken && r !== rank) delete newCategoryVotes[p]
+      else if (r === rank && p !== dragToken) delete newCategoryVotes[p]
     }
-    const occupiedBy = Object.entries(currentVotes).find(([p, r]) => r === rank)
-    if (occupiedBy) {
-      const newVotes = { ...votes }
-      delete newVotes[categoryId][occupiedBy[0]]
-      setVotes(newVotes)
-    }
-    setVotes(prev => ({
-      ...prev,
-      [categoryId]: { ...(prev[categoryId] || {}), [dragToken]: rank }
-    }))
+    newCategoryVotes[dragToken] = rank
+
+    setVotes(prev => ({ ...prev, [categoryId]: newCategoryVotes }))
     setDragToken(null)
   }
 
@@ -146,14 +142,12 @@ export default function Awards() {
   }
 
   const getProfile = () => {
-    const selfVotes = Object.values(votes).filter(cat => cat[selectedMember]).length
-    if (selfVotes >= 15) return "L'Insolent Narcissique"
-    const scoreVariance = Object.values(votes).reduce((acc, cat) => {
-      const scores = Object.values(cat)
-      return acc + (Math.max(...scores) - Math.min(...scores))
-    }, 0)
-    if (scoreVariance > 20) return "Le Sniper de l'Ombre"
-    return "Le Diplomate Équilibré"
+    const totalMentions = Object.values(votes).reduce((acc, cat) => acc + Object.keys(cat).length, 0)
+    const uniquePeople = new Set(Object.values(votes).flatMap(cat => Object.keys(cat)))
+    const uniqueRatio = uniquePeople.size / Math.max(totalMentions, 1)
+    if (uniqueRatio >= 0.55) return VOTER_PROFILES[2]
+    if (totalMentions >= 40) return VOTER_PROFILES[1]
+    return VOTER_PROFILES[0]
   }
 
   if (step === 'login') {
@@ -166,8 +160,11 @@ export default function Awards() {
         </header>
         <div className="max-w-md mx-auto px-4 pb-12">
           <div className="bg-white rounded-3xl shadow-xl p-8">
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">🏆 Le Pantheon</h1>
-            <p className="text-center text-gray-500 mb-8">des Trophées Shalom</p>
+            <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">🏆 Le Panthéon</h1>
+            <p className="text-center text-gray-500 mb-4">des Trophées Shalom</p>
+            <p className="text-center text-sm text-gray-400 mb-8 italic">
+              Ici, on célèbre tout le monde. Chaque trophée est un câlin en forme de podium. 💛
+            </p>
             {!votingOpen && (
               <div className="bg-amber-50 text-amber-700 px-4 py-3 rounded-xl text-sm mb-6">
                 <p className="font-bold">⏰ Votes fermés</p>
@@ -196,7 +193,7 @@ export default function Awards() {
                 try {
                   const res = await fetch(`/api/login?member=${selectedMember}&code=${code}`)
                   const data = await res.json()
-                  if (data.success) { setStep('voting'); setError('') } 
+                  if (data.success) { setStep('voting'); setError('') }
                   else { setError(data.message || 'Code invalide') }
                 } catch { setStep('voting') }
               }} disabled={!selectedMember || code.length !== 4 || !votingOpen}
@@ -213,9 +210,10 @@ export default function Awards() {
   if (step === 'voting') {
     const category = CATEGORIES[currentCategory]
     const categoryVotes = votes[category.id] || {}
-    const progress = ((currentCategory + 1) / CATEGORIES.length) * 100
-    const progressMsg = PROGRESS_MESSAGES.find(m => progress >= m.threshold)?.message || ''
+    const progress = (currentCategory / CATEGORIES.length) * 100
+    const progressMsg = [...PROGRESS_MESSAGES].reverse().find(m => progress >= m.threshold)?.message || ''
     const canContinue = Object.keys(categoryVotes).length >= 3
+    const isLast = currentCategory === CATEGORIES.length - 1
 
     return (
       <div className="min-h-screen bg-yellow-50">
@@ -236,59 +234,41 @@ export default function Awards() {
           <Link href="/" className="inline-flex items-center text-gray-500 hover:text-gray-700 mb-4">
             ← Quitter
           </Link>
-          
+
           <div className="text-center mb-8">
             <div className="text-6xl mb-4">{category.emoji}</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">{category.title}</h2>
             <p className="text-gray-500 text-sm max-w-md mx-auto">{category.desc}</p>
+            <p className="text-amber-500 text-xs max-w-md mx-auto mt-2 italic">{category.hint}</p>
           </div>
 
-          <div className="flex justify-center items-end gap-4 mb-12">
-            <div className="w-24 h-[100px] bg-gradient-to-t from-gray-300 to-gray-200 rounded-t-lg flex flex-col items-center justify-end pb-2 cursor-pointer"
-              onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, 2)}>
-              {categoryVotes[Object.keys(categoryVotes).find(p => categoryVotes[p] === 2)] ? (
-                <div className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold text-sm mb-1"
-                    onClick={() => removeVote(Object.keys(categoryVotes).find(p => categoryVotes[p] === 2))}>
-                    {Object.keys(categoryVotes).find(p => categoryVotes[p] === 2)?.slice(0, 2)}
-                  </div>
-                  <span className="text-xs font-bold text-gray-500">2</span>
+          <div className="flex justify-center items-end gap-4 mb-4">
+            {[2, 3, 1].map((rank) => {
+              const occupant = Object.keys(categoryVotes).find(p => categoryVotes[p] === rank)
+              const base = rank === 3 ? 'w-28 h-[140px] from-yellow-400 to-yellow-300' : rank === 2 ? 'w-24 h-[100px] from-gray-300 to-gray-200' : 'w-24 h-[70px] from-orange-300 to-orange-200'
+              return (
+                <div key={rank} className={`${base} bg-gradient-to-t rounded-t-lg flex flex-col items-center justify-end pb-2 cursor-pointer`}
+                  onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, rank)}>
+                  {occupant ? (
+                    <div className="text-center">
+                      <div className="rounded-full bg-white/70 backdrop-blur flex items-center justify-center font-bold text-gray-700 text-xs px-3 py-2 shadow mb-1 cursor-pointer"
+                        onClick={() => removeVote(occupant)} title="Clique pour retirer">
+                        {occupant}
+                      </div>
+                      <span className="text-xs font-bold text-gray-600">{MEDALS[rank - 1]}</span>
+                    </div>
+                  ) : <span className="text-xs text-gray-500">{MEDALS[rank - 1]} {POINTS_BY_RANK[rank - 1]} pt{POINTS_BY_RANK[rank - 1] > 1 ? 's' : ''}</span>}
                 </div>
-              ) : <span className="text-xs text-gray-400">2 pts</span>}
-            </div>
-
-            <div className="w-28 h-[140px] bg-gradient-to-t from-yellow-400 to-yellow-300 rounded-t-lg flex flex-col items-center justify-end pb-2 cursor-pointer"
-              onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, 3)}>
-              {categoryVotes[Object.keys(categoryVotes).find(p => categoryVotes[p] === 3)] ? (
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold mb-1"
-                    onClick={() => removeVote(Object.keys(categoryVotes).find(p => categoryVotes[p] === 3))}>
-                    {Object.keys(categoryVotes).find(p => categoryVotes[p] === 3)?.slice(0, 2)}
-                  </div>
-                  <span className="text-xs font-bold text-yellow-700">1er</span>
-                </div>
-              ) : <span className="text-xs text-yellow-700">3 pts</span>}
-            </div>
-
-            <div className="w-24 h-[70px] bg-gradient-to-t from-orange-300 to-orange-200 rounded-t-lg flex flex-col items-center justify-end pb-2 cursor-pointer"
-              onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, 1)}>
-              {categoryVotes[Object.keys(categoryVotes).find(p => categoryVotes[p] === 1)] ? (
-                <div className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold text-sm mb-1"
-                    onClick={() => removeVote(Object.keys(categoryVotes).find(p => categoryVotes[p] === 1))}>
-                    {Object.keys(categoryVotes).find(p => categoryVotes[p] === 1)?.slice(0, 2)}
-                  </div>
-                  <span className="text-xs font-bold text-orange-700">3</span>
-                </div>
-              ) : <span className="text-xs text-orange-400">1 pt</span>}
-            </div>
+              )
+            })}
           </div>
+          <p className="text-center text-xs text-gray-400 mb-8">🥇 3 pts · 🥈 2 pts · 🥉 1 pt — glisse, échange, ou clique sur un nom pour le retirer.</p>
 
           <div className="mb-8">
-            <p className="text-center text-sm text-gray-500 mb-4">Glisse les copains sur le podium 👇</p>
+            <p className="text-center text-sm text-gray-500 mb-4">Glisse les copains sur le podium 👇 (toi inclus·e, le self-love est autorisé)</p>
             <div className="flex flex-wrap justify-center gap-2">
               {PARTICIPANTS.map(participant => {
-                const isOnPodium = Object.values(categoryVotes).includes(participant) || Object.keys(categoryVotes).includes(participant)
+                const isOnPodium = participant in categoryVotes
                 return (
                   <div key={participant} draggable={!isOnPodium} onDragStart={(e) => handleDragStart(e, participant)}
                     className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${isOnPodium ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white shadow-md hover:shadow-lg hover:scale-105 cursor-grab'}`}>
@@ -299,14 +279,27 @@ export default function Awards() {
             </div>
           </div>
 
-          {canContinue && (
-            <div className="text-center">
-              <button onClick={() => currentCategory < CATEGORIES.length - 1 ? setCurrentCategory(prev => prev + 1) : submitVotes()}
-                className="px-8 py-4 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600 transition-all hover:scale-105 shadow-lg">
-                {currentCategory < CATEGORIES.length - 1 ? <>Suivant <span className="ml-2">➡️</span></> : 'Envoyer mes verdicts 🎉'}
+          <div className="flex flex-wrap justify-center gap-3">
+            {!isLast && (
+              <button onClick={() => setCurrentCategory(prev => prev + 1)}
+                className="px-6 py-3 text-gray-500 rounded-full hover:bg-gray-200 transition-all text-sm font-medium">
+                Passer cette catégorie →
               </button>
-            </div>
-          )}
+            )}
+            {(canContinue || (!isLast && Object.keys(categoryVotes).length === 0)) && (
+              <button onClick={() => isLast ? submitVotes() : setCurrentCategory(prev => prev + 1)}
+                className="px-8 py-4 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600 transition-all hover:scale-105 shadow-lg">
+                {isLast ? 'Envoyer mes verdicts 🎉' : <>Suivant <span className="ml-2">➡️</span></>}
+              </button>
+            )}
+            {currentCategory > 0 && (
+              <button onClick={() => setCurrentCategory(prev => Math.max(prev - 1, 0))}
+                className="px-6 py-3 text-gray-500 rounded-full hover:bg-gray-200 transition-all text-sm font-medium">
+                ← Revenir
+                {Object.keys(categoryVotes).length > 0 && ' et modifier'}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white py-2 overflow-hidden">
@@ -319,18 +312,22 @@ export default function Awards() {
   }
 
   if (step === 'finished') {
+    const profile = getProfile()
     return (
       <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white flex items-center justify-center p-4">
         <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
           <div className="text-6xl mb-6">🎊</div>
           <h1 className="text-3xl font-bold text-gray-800 mb-4">Votes Envoyés !</h1>
-          <p className="text-gray-500 mb-8">Merci d'avoir participé au Pantheon des Trophées</p>
+          <p className="text-gray-500 mb-2">Merci d'avoir participé au Panthéon des Trophées</p>
+          <p className="text-sm text-gray-400 mb-8">Résultat garanti : 14 gagnant·e·s et zéro perdant·e. 💛</p>
           <div className="bg-amber-50 rounded-2xl p-6 mb-8">
             <p className="text-sm text-gray-500 mb-2">Ton profil de votant</p>
-            <p className="text-2xl font-bold text-amber-600">{getProfile()}</p>
+            <p className="text-4xl mb-2">{profile.emoji}</p>
+            <p className="text-2xl font-bold text-amber-600">{profile.label}</p>
+            <p className="text-sm text-gray-500 mt-2">{profile.blurb}</p>
           </div>
           <div className="space-y-3 text-sm text-gray-500 mb-8">
-            <p>🥇 3 points = 1ère place</p>
+            <p>🥇 3 points = 1re place</p>
             <p>🥈 2 points = 2e place</p>
             <p>🥉 1 point = 3e place</p>
           </div>
