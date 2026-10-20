@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { getSheetData } from '@/lib/sheets'
+import { buildPodiums, tallyRows, CATEGORIES } from '@/lib/awards'
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID
 const DEV_MODE = !process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT
 
 const MOCK_RESULTS = {
-  'Le Grand Prix de la Soufflerie': [{ name: 'Jeremy', points: 12 }, { name: 'Toby', points: 8 }, { name: 'Matthias', points: 5 }],
-  "L'Award des Orgas": [{ name: 'Jeremy & Caroline', points: 25 }, { name: 'Arnaud & Coraline', points: 18 }, { name: 'Martin & Julie', points: 12 }],
+  [CATEGORIES[0].title]: [{ name: 'Jeremy', points: 12, rank: 1, medal: '🥇' }, { name: 'Toby', points: 8, rank: 2, medal: '🥈' }, { name: 'Matthias', points: 5, rank: 3, medal: '🥉' }],
+  [CATEGORIES[19].title]: [{ name: 'Jeremy & Caroline', points: 25, rank: 1, medal: '🥇' }, { name: 'Arnaud & Coraline', points: 18, rank: 2, medal: '🥈' }, { name: 'Martin & Julie', points: 12, rank: 3, medal: '🥉' }],
 }
 
 export async function GET(request) {
@@ -14,47 +15,23 @@ export async function GET(request) {
   const year = searchParams.get('year')
 
   if (DEV_MODE) {
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       results: MOCK_RESULTS,
-      year: year || new Date().getFullYear()
+      year: year || new Date().getFullYear(),
+      message: 'Résultats de démonstration. Le vrai podium n\'a pas de perdant·e·s ! 💛'
     })
   }
 
   try {
     const data = await getSheetData(SPREADSHEET_ID, 'Votes', 'A:D')
-    
-    const results = {}
-    
-    for (let i = 1; i < data.length; i++) {
-      const [voter, category, voteString] = data[i]
-      if (!category || !voteString) continue
+    const results = buildPodiums(tallyRows(data))
 
-      if (!results[category]) {
-        results[category] = {}
-      }
-
-      voteString.split(', ').forEach(v => {
-        const [name, points] = v.split(':')
-        if (name && points) {
-          if (!results[category][name]) {
-            results[category][name] = 0
-          }
-          results[category][name] += parseInt(points)
-        }
-      })
-    }
-
-    const winners = {}
-    for (const [category, votes] of Object.entries(results)) {
-      const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1])
-      winners[category] = sorted.slice(0, 3).map(([name, points]) => ({ name, points }))
-    }
-
-    return NextResponse.json({ 
-      success: true, 
-      results: winners,
-      year: year || new Date().getFullYear()
+    return NextResponse.json({
+      success: true,
+      results,
+      year: year || new Date().getFullYear(),
+      message: 'Félicitations à toutes et à tous : le week-end reste un victoire collective. 🏆'
     })
   } catch (error) {
     console.error('Erreur getting results:', error)

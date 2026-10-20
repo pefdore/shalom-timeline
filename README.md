@@ -31,10 +31,20 @@ npm run dev
 
 ## Structure des votes
 
-Chaque catégorie reçoit 3 votes:
-- 🥇 1ère place: 3 points
-- 🥈 2e place: 2 points  
-- 🥉 3e place: 1 point
+Chaque catégorie propose un podium à 3 places (glisser-déposer, échange de places possible) :
+- 🥇 1ère place : 3 points
+- 🥈 2e place : 2 points
+- 🥉 3e place : 1 point
+
+On peut passer une catégorie ou revenir en arrière pour modifier ses votes.
+Les égalités sont gérées : deux personnes à égalité partagent le même rang.
+Esprit des trophées : drôle, bienveillant et inclusif — ici, personne n'est un perdant. ❤️
+
+## Résultats
+
+- `GET /api/results` retourne le podium par catégorie (rang, médaille, points).
+- `GET /api/vote` (mode production) retourne les mêmes podiums.
+- Les catégories sont définies une seule fois dans `lib/awards.js` (partagé entre la page de vote et les API).
 
 ## Configuration Google Sheets (Optionnel)
 
@@ -51,10 +61,10 @@ Pour activer le stockage dans Google Sheets:
 
 ## Personnalisation
 
-- Modifie `PARTICIPANTS` dans `app/page.js` pour changer les votants
-- Modifie `CATEGORIES` pour ajouter/retirer des catégories
-- Modifie `PROGRESS_MESSAGES` pour personnaliser les messages
-- Modifie `TICKER_PHRASES` pour le bandeau d'actualités
+- Modifie `PARTICIPANTS` dans `app/awards/page.js` pour changer les votants
+- Modifie `CATEGORIES` dans `lib/awards.js` pour ajouter/retirer des catégories (source unique, utilisée aussi par les API)
+- Modifie `PROGRESS_MESSAGES` et `TICKER_PHRASES` dans `app/awards/page.js` pour personnaliser les messages
+- Modifie `VOTER_PROFILES` dans `app/awards/page.js` pour les profils de fin
 
 ## Tech Stack
 
