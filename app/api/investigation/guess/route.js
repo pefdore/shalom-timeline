@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   readState, saveState, readGazette, addGazetteEntry,
-  checkMemberCode, checkOrgasCode, isKnownMember, monthKey,
+  checkMemberCode, checkOrgasCode, isKnownMember, MEMBRES, monthKey,
   isMatch, wrongVerdict, alreadyPlayedMsg,
 } from '@/lib/investigation'
 
@@ -49,12 +49,14 @@ export async function POST(request) {
         { status: 400 }
       )
     }
-    if (winners.length >= 3) {
+    const players = MEMBRES.filter((m) => !(state.organizers || []).includes(m))
+    const everyoneFound = players.length > 0 && players.every((m) => winners.includes(m))
+    if (everyoneFound) {
       const revealDate = state.revealDate ? new Date(state.revealDate) : null
       const revealed = revealDate ? new Date() > revealDate : false
       const spoiler = revealed
         ? ` Le lieu était ${state.location}.`
-        : ` Podium complet : ${winners.join(', ')}. Le lieu reste scellé jusqu'à la révélation.`
+        : ` Tout le monde a trouvé (${winners.length}/${players.length}). Le lieu reste scellé jusqu'à la révélation.`
       return NextResponse.json(
         { success: false, message: `Enquête close !${spoiler} Trop tard, Sherlock.` },
         { status: 400 }
@@ -91,7 +93,11 @@ export async function POST(request) {
         verdict.msg = "C'EST ÇA ! Dossier bouclé, légende du groupe !"
       }
       if (updatedWinners.length === 2) verdict.msg = "C'EST ÇA ! 2e sur le podium, la médaille d'argent est à toi !"
-      if (updatedWinners.length === 3) verdict.msg = "C'EST ÇA ! 3e et dernier sur le podium, la médaille de bronze est à toi !"
+      if (updatedWinners.length === 3) verdict.msg = "C'EST ÇA ! 3e sur le podium, la médaille de bronze est à toi !"
+      const updatedPlayers = MEMBRES.filter((m) => !(state.organizers || []).includes(m))
+      if (updatedWinners.length >= updatedPlayers.length) {
+        verdict.msg = "C'EST ÇA ! Tout le monde a trouvé, l'enquête est officiellement bouclée !"
+      }
       await saveState(patch)
     }
 
