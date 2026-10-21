@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
 import { sendPushToMembers, listSubscribedMembers } from '@/lib/push'
-import { checkOrgasCode } from '@/lib/investigation'
+import { checkAdminCode } from '@/lib/auth'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
 
-  if (!checkOrgasCode(code)) {
+  if (!checkAdminCode(code)) {
     return NextResponse.json(
-      { success: false, message: 'Réservé aux orgas. Montre patte blanche \ud83d\udd75\ufe0f' },
+      { success: false, message: 'Réservé à l’admin du site. Montre patte blanche 🔐' },
       { status: 401 }
     )
   }
@@ -30,9 +30,9 @@ export async function POST(request) {
     const body = await request.json()
     const { code, members, title, body: message, url } = body
 
-    if (!checkOrgasCode(code)) {
+    if (!checkAdminCode(code)) {
       return NextResponse.json(
-        { success: false, message: 'Code orgas invalide. Les notifications sont un pouvoir trop grand pour toi.' },
+        { success: false, message: 'Code admin invalide. Les notifications sont un pouvoir trop grand pour toi.' },
         { status: 401 }
       )
     }
@@ -53,12 +53,12 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       ...result,
-      message: `Notification envoyée à ${result.sent} portable(s) \ud83d\udcf3`,
+      message: `Notification envoyée à ${result.sent} portable(s) 📳`,
     })
   } catch (error) {
     console.error('Erreur envoi push:', error)
     return NextResponse.json(
-      { success: false, message: 'Le satellite de la NASA est occupé. R\u00e9essaie.' },
+      { success: false, message: 'Le satellite de la NASA est occupé. Réessaie.' },
       { status: 500 }
     )
   }

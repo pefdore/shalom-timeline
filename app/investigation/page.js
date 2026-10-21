@@ -5,7 +5,6 @@ import Link from 'next/link'
 import confetti from 'canvas-confetti'
 import dynamic from 'next/dynamic'
 import PushNotifications from '../PushNotifications'
-import PushAdmin from '../PushAdmin'
 
 const GazatteMap = dynamic(() => import('./GazetteMap'), {
   ssr: false,
@@ -216,10 +215,6 @@ export default function Investigation() {
             {teaser}
           </div>
         </div>
-
-        {orgas && (
-          <PushAdmin code={code} membres={MEMBRES} />
-        )}
 
         {orgas && !state?.solved && (
           <div className="bg-white rounded-3xl shadow-xl p-6">
