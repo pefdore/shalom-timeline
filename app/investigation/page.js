@@ -197,8 +197,8 @@ export default function Investigation() {
               <p className="text-lg text-gray-700">
                 {state.solved
                   ? (state.location
-                      ? <>🎉 <b>{state.winner}</b> a démasqué le lieu : <b>{state.location}</b> !</>
-                      : <>🎉 <b>{state.winner}</b> a démasqué le lieu ! Le mystère reste scellé jusqu'à la révélation...</>)
+                      ? <>🎉 Podium : <b>{(state.winners || [state.winner]).join(', ')}</b> ont démasqué le lieu : <b>{state.location}</b> !</>
+                      : <>🎉 <b>{(state.winners || [state.winner]).join(', ')}</b> {(state.winners || []).length > 1 ? 'ont' : 'a'} démasqué le lieu ! Le mystère reste scellé jusqu'à la révélation...</>)
                   : <>🕵️ Mystère levé : le lieu était <b>{state.location}</b>.</>}
               </p>
             ) : (
@@ -333,7 +333,13 @@ export default function Investigation() {
             <div className="space-y-2">
               {state.gazette.slice(0, 20).map((g, i) => (
                 <div key={i} className={`px-4 py-3 rounded-xl text-sm ${g.correct ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-50 text-gray-600'}`}>
-                  <span className="font-bold">{g.member}</span> a osé proposer « <i>{g.guess}</i> »
+                  {g.correct ? (
+                    <span>
+                      {['🥇', '🥈', '🥉'][g.rank] || '🏅'} <span className="font-bold">{g.member}</span> a trouvé le lieu !
+                    </span>
+                  ) : (
+                    <span><span className="font-bold">{g.member}</span> a osé proposer « <i>{g.guess}</i> »</span>
+                  )}
                   {!g.correct && g.verdict && <span className="block text-gray-500 mt-1">{g.verdict}</span>}
                 </div>
               ))}

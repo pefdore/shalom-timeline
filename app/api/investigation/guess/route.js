@@ -29,6 +29,7 @@ export async function POST(request) {
       )
     }
     const [state, gazette] = await Promise.all([readState(), readGazette()])
+    const winners = (state.winners || []).filter(Boolean)
     if ((state.organizers || []).includes(member)) {
       return NextResponse.json(
         { success: false, message: '🤐 T\'es orga cette année, interdit de jouer ! Contente-toi de sourire mystérieusement.' },
@@ -48,12 +49,12 @@ export async function POST(request) {
         { status: 400 }
       )
     }
-    if (state.solved) {
+    if (winners.length >= 3) {
       const revealDate = state.revealDate ? new Date(state.revealDate) : null
       const revealed = revealDate ? new Date() > revealDate : false
       const spoiler = revealed
         ? ` Le lieu était ${state.location}.`
-        : ` ${state.winner} l'a trouvé, mais le lieu reste scellé jusqu'à la révélation.`
+        : ` Podium complet : ${winners.join(', ')}. Le lieu reste scellé jusqu'à la révélation.`
       return NextResponse.json(
         { success: false, message: `Enquête close !${spoiler} Trop tard, Sherlock.` },
         { status: 400 }
@@ -83,7 +84,15 @@ export async function POST(request) {
     })
 
     if (correct) {
-      await saveState({ solved: true, winner: member, solvedAt: new Date().toISOString() })
+      const updatedWinners = winners.includes(member) ? winners : [...winners, member]
+      const patch = { solved: true, winners: updatedWinners, solvedAt: new Date().toISOString() }
+      if (updatedWinners.length === 1) {
+        patch.winner = member
+        verdict.msg = "C'EST ÇA ! Dossier bouclé, légende du groupe !"
+      }
+      if (updatedWinners.length === 2) verdict.msg = "C'EST ÇA ! 2e sur le podium, la médaille d'argent est à toi !"
+      if (updatedWinners.length === 3) verdict.msg = "C'EST ÇA ! 3e et dernier sur le podium, la médaille de bronze est à toi !"
+      await saveState(patch)
     }
 
     return NextResponse.json({
