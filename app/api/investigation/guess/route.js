@@ -49,8 +49,13 @@ export async function POST(request) {
       )
     }
     if (state.solved) {
+      const revealDate = state.revealDate ? new Date(state.revealDate) : null
+      const revealed = revealDate ? new Date() > revealDate : false
+      const spoiler = revealed
+        ? ` Le lieu était ${state.location}.`
+        : ` ${state.winner} l'a trouvé, mais le lieu reste scellé jusqu'à la révélation.`
       return NextResponse.json(
-        { success: false, message: `Enquête close ! Le lieu était ${state.location}. Trop tard, Sherlock.` },
+        { success: false, message: `Enquête close !${spoiler} Trop tard, Sherlock.` },
         { status: 400 }
       )
     }

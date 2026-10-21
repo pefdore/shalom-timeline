@@ -196,7 +196,9 @@ export default function Investigation() {
             state.solved || state.revealed ? (
               <p className="text-lg text-gray-700">
                 {state.solved
-                  ? <>🎉 <b>{state.winner}</b> a démasqué le lieu : <b>{state.location}</b> !</>
+                  ? (state.location
+                      ? <>🎉 <b>{state.winner}</b> a démasqué le lieu : <b>{state.location}</b> !</>
+                      : <>🎉 <b>{state.winner}</b> a démasqué le lieu ! Le mystère reste scellé jusqu'à la révélation...</>)
                   : <>🕵️ Mystère levé : le lieu était <b>{state.location}</b>.</>}
               </p>
             ) : (
