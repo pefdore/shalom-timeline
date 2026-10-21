@@ -1,68 +1,75 @@
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
-SS = 4  # supersampling
+SS = 4  # supersampling factor
 SIZE = 1024
 W = SIZE * SS
 
-BLACK = (8, 8, 10)
-WHITE = (245, 245, 245)
-GREY = (180, 180, 180)
+GOLD_TOP = (233, 199, 95)
+GOLD_MID = (201, 162, 39)
+GOLD_BOTTOM = (150, 120, 28)
+GOLD_DARK = (138, 110, 26)
+BG_TOP = (35, 40, 51)
+BG_BOTTOM = (14, 16, 20)
+
+
+def gradient_img(w, h, top, bottom):
+    img = Image.new("RGB", (w, h))
+    dr = ImageDraw.Draw(img)
+    for y in range(h):
+        t = y / max(1, h - 1)
+        dr.line(
+            [(0, y), (w, y)],
+            fill=(
+                int(top[0] + (bottom[0] - top[0]) * t),
+                int(top[1] + (bottom[1] - top[1]) * t),
+                int(top[2] + (bottom[2] - top[2]) * t),
+            ),
+        )
+    return img
 
 
 def build():
-    img = Image.new("RGB", (W, W), BLACK)
-    d = ImageDraw.Draw(img)
+    bg = gradient_img(W, W, BG_TOP, BG_BOTTOM).convert("RGBA")
+    gold = gradient_img(W, W, GOLD_TOP, GOLD_BOTTOM).convert("RGBA")
+
+    mask = Image.new("L", (W, W), 0)
+    md = ImageDraw.Draw(mask)
     s = SS
 
-    # circular badge: outer ring + thin inner ring
-    cx = cy = W // 2
-    R = int(462 * s)
-    d.ellipse((cx - R, cy - R, cx + R, cy + R), outline=WHITE, width=int(18 * s))
-    R2 = int(400 * s)
-    d.ellipse((cx - R2, cy - R2, cx + R2, cy + R2), outline=WHITE, width=int(6 * s))
+    # wrist
+    md.rounded_rectangle((400 * s, 730 * s, 624 * s, W), radius=40 * s, fill=255)
+    # fist
+    md.rounded_rectangle((240 * s, 555 * s, 784 * s, 790 * s), radius=64 * s, fill=255)
+    # index finger
+    md.rounded_rectangle((370 * s, 185 * s, 474 * s, 560 * s), radius=52 * s, fill=255)
+    # middle finger
+    md.rounded_rectangle((494 * s, 155 * s, 598 * s, 560 * s), radius=52 * s, fill=255)
 
-    # decorative dots around the ring (stars of the original badge)
-    import math
-    for i in range(24):
-        a = 2 * math.pi * i / 24
-        x1 = cx + (R - int(40 * s)) * math.cos(a)
-        y1 = cy + (R - int(40 * s)) * math.sin(a)
-        r = int(7 * s)
-        d.ellipse((x1 - r, y1 - r, x1 + r, y1 + r), fill=WHITE)
+    bg.paste(gold, (0, 0), mask)
 
-    lw = int(34 * s)  # main stroke width
+    # thumb folded over the right side of the fist
+    thumb = Image.new("L", (W, W), 0)
+    td = ImageDraw.Draw(thumb)
+    td.rounded_rectangle((600 * s, 540 * s, 800 * s, 790 * s), radius=70 * s, fill=255)
+    thumb = thumb.filter(ImageFilter.GaussianBlur(0.4 * s))
+    gold_dark = gradient_img(W, W, GOLD_MID, GOLD_DARK).convert("RGBA")
+    bg.paste(gold_dark, (0, 0), thumb)
 
-    def hand(d):
-        # two joined fingers (index + middle), drawn as outline
-        # outer contour of fingers + fist, single path style:
-        # fingers block
-        fx0, fx1 = 400 * s, 624 * s
-        fy_top, fy_bot = 250 * s, 560 * s
-        d.rounded_rectangle(
-            (fx0, fy_top, fx1, fy_bot), radius=int(60 * s), outline=WHITE, width=lw
-        )
-        # fist block, slightly wider
-        bx0, bx1 = 340 * s, 684 * s
-        by_top, by_bot = 560 * s, 764 * s
-        d.rounded_rectangle(
-            (bx0, by_top, bx1, by_bot), radius=int(50 * s), outline=WHITE, width=lw
-        )
-        # wrist stub
-        d.rounded_rectangle(
-            (440 * s, 764 * s, 584 * s, 830 * s), radius=int(24 * s), outline=WHITE, width=lw
-        )
-        # separator line between the two joined fingers
-        d.line((512 * s, fy_top + int(70 * s), 512 * s, fy_bot), fill=WHITE, width=int(20 * s))
-        # knuckle lines on the fist
-        for kx in (420, 530):
-            d.line((kx * s, 640 * s, (kx + 60) * s, 640 * s), fill=WHITE, width=int(20 * s))
-        # folded thumb hint on the fist
-        d.arc((600 * s, 580 * s, 690 * s, 700 * s), start=90, end=200, fill=WHITE, width=int(20 * s))
+    d = ImageDraw.Draw(bg)
+    # crease between the two fingers
+    d.line((484 * s, 240 * s, 484 * s, 540 * s), fill=GOLD_DARK, width=9 * s)
+    # knuckle lines on the fist
+    for x0 in (300, 410, 520):
+        d.line((x0 * s, 640 * s, (x0 + 90) * s, 640 * s), fill=GOLD_DARK, width=8 * s)
 
-    hand(d)
+    # subtle highlight on the left edge of the fingers
+    hl = Image.new("L", (W, W), 0)
+    hd = ImageDraw.Draw(hl)
+    hd.rounded_rectangle((374 * s, 200 * s, 392 * s, 550 * s), radius=9 * s, fill=90)
+    hd.rounded_rectangle((498 * s, 170 * s, 516 * s, 550 * s), radius=9 * s, fill=90)
+    bg.paste(Image.new("RGBA", (W, W), (255, 240, 180, 255)), (0, 0), hl)
 
-    # "SHALOM" wordmark drawn as vector strokes (no font dependency)
-    # each glyph on a 100x140 grid, stroke ~26, letterspaced
+    # "SHALOM" wordmark drawn as vector strokes at the bottom
     GLYPHS = {
         'S': [((30,0),(70,0)), ((30,0),(30,60)), ((30,60),(70,60)), ((70,60),(70,120)), ((70,120),(30,120))],
         'H': [((30,0),(30,120)), ((70,0),(70,120)), ((30,60),(70,60))],
@@ -72,22 +79,21 @@ def build():
         'M': [((20,120),(20,0)), ((20,0),(50,50)), ((50,50),(80,0)), ((80,0),(80,120))],
     }
     text = "SHALOM"
-    gs = int(0.9 * s)  # glyph unit
-    stroke = int(26 * gs / 100 * 100)  # ~26 units
-    total_w = sum(100 for _ in text) + 30 * (len(text) - 1)
-    scale = gs
-    x0 = (W - total_w * scale) // 2
-    y0 = int(808 * s)
+    scale = int(0.95 * s)
+    total_units = 100 * len(text) + 30 * (len(text) - 1)
+    x0 = (W - total_units * scale) // 2
+    y0 = int(830 * s)
     for i, ch in enumerate(text):
         gx = x0 + i * 130 * scale
         for (px1, py1), (px2, py2) in GLYPHS[ch]:
             d.line(
                 (gx + px1 * scale, y0 + py1 * scale, gx + px2 * scale, y0 + py2 * scale),
-                fill=WHITE,
-                width=int(13 * s),
+                fill=GOLD_TOP,
+                width=int(14 * s),
             )
 
-    return img.resize((SIZE, SIZE), Image.LANCZOS)
+    icon = bg.resize((SIZE, SIZE), Image.LANCZOS)
+    return icon.convert("RGB")
 
 
 icon = build()
@@ -95,12 +101,13 @@ icon.save("app/icon.png")
 icon.save("public/icon-512.png")
 icon.resize((192, 192), Image.LANCZOS).save("public/icon-192.png")
 icon.resize((180, 180), Image.LANCZOS).save("public/apple-touch-icon.png")
-icon.resize((32, 32), Image.LANCZOS).save("public/favicon.ico", sizes=[(16, 16), (32, 32)])
-icon.resize((48, 48), Image.LANCZOS).save("public/favicon-32.png", sizes=[(32, 32), (48, 48)])
+icon.resize((180, 180), Image.LANCZOS).save("public/apple-touch-icon.png")
+icon.resize((48, 48), Image.LANCZOS).save("public/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
+icon.resize((32, 32), Image.LANCZOS).save("public/favicon-32.png")
 
 maskable = icon.copy()
-small = icon.resize((730, 730), Image.LANCZOS)
-maskable.paste(small, (147, 147))
+small = icon.resize((700, 700), Image.LANCZOS)
+maskable.paste(small, (162, 162))
 maskable.save("public/icon-maskable-512.png")
 maskable.resize((192, 192), Image.LANCZOS).save("public/icon-maskable-192.png")
 print("done")
