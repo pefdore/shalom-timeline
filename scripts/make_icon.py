@@ -1,55 +1,86 @@
-import math
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
-GOLD = (201, 162, 39)
-GOLD_DARK = (168, 134, 31)
-BG_TOP = (30, 34, 43)
-BG_BOTTOM = (14, 16, 20)
+SS = 4  # supersampling factor
 SIZE = 1024
+W = SIZE * SS
+
+GOLD_TOP = (233, 199, 95)
+GOLD_MID = (201, 162, 39)
+GOLD_BOTTOM = (150, 120, 28)
+GOLD_DARK = (138, 110, 26)
+BG_TOP = (35, 40, 51)
+BG_BOTTOM = (14, 16, 20)
 
 
-def gradient(size):
-    img = Image.new("RGB", (size, size))
-    for y in range(size):
-        t = y / (size - 1)
-        r = int(BG_TOP[0] + (BG_BOTTOM[0] - BG_TOP[0]) * t)
-        g = int(BG_TOP[1] + (BG_BOTTOM[1] - BG_TOP[1]) * t)
-        b = int(BG_TOP[2] + (BG_BOTTOM[2] - BG_TOP[2]) * t)
-        for x in range(0, size, 256):
-            img.paste(Image.new("RGB", (min(256, size - x), 1), (r, g, b)), (x, y))
+def gradient_img(w, h, top, bottom):
+    img = Image.new("RGB", (w, h))
+    dr = ImageDraw.Draw(img)
+    for y in range(h):
+        t = y / max(1, h - 1)
+        dr.line(
+            [(0, y), (w, y)],
+            fill=(
+                int(top[0] + (bottom[0] - top[0]) * t),
+                int(top[1] + (bottom[1] - top[1]) * t),
+                int(top[2] + (bottom[2] - top[2]) * t),
+            ),
+        )
     return img
 
 
-def rotate_rect(draw_img, box, radius, angle, fill):
-    w = box[2] - box[0]
-    h = box[3] - box[1]
-    tmp = Image.new("RGBA", (w + radius * 2, h + radius * 2), (0, 0, 0, 0))
-    ImageDraw.Draw(tmp).rounded_rectangle(
-        (radius, radius, radius + w, radius + h), radius, fill=fill
-    )
-    tmp = tmp.rotate(angle, resample=Image.BICUBIC, expand=True)
-    draw_img.paste(tmp, (int(box[0]) - radius, int(box[1]) - radius), tmp)
+def shape(mask_draw, fn):
+    fn(mask_draw)
 
 
 def build():
-    img = gradient(SIZE).convert("RGBA")
-    d = ImageDraw.Draw(img)
+    bg = gradient_img(W, W, BG_TOP, BG_BOTTOM).convert("RGBA")
+    gold = gradient_img(W, W, GOLD_TOP, GOLD_BOTTOM).convert("RGBA")
 
-    # two extended fingers (index + middle, touching)
-    d.rounded_rectangle((416, 170, 608, 560), radius=96, fill=GOLD)
-    # crease between the two fingers, subtle, only near the tips
-    d.line((512, 196, 512, 350), fill=GOLD_DARK, width=14)
-    # fist (closed hand)
-    d.rounded_rectangle((306, 500, 718, 790), radius=80, fill=GOLD)
-    # thumb folded on the side of the fist
-    rotate_rect(img, (600, 520, 718, 700), 50, -12, GOLD_DARK)
-    # wrist going off the bottom edge
-    d.rectangle((396, 760, 628, SIZE), fill=GOLD)
-    d.rounded_rectangle((396, 700, 628, 860), radius=40, fill=GOLD)
-    # thin shadow under the fist
-    d.ellipse((326, 770, 698, 830), fill=(0, 0, 0, 90))
+    mask = Image.new("L", (W, W), 0)
+    md = ImageDraw.Draw(mask)
 
-    return img.convert("RGB")
+    def hand(md):
+        s = SS
+        # wrist
+        md.rounded_rectangle((400 * s, 690 * s, 624 * s, W), radius=40 * s, fill=255)
+        # fist
+        md.rounded_rectangle((240 * s, 555 * s, 784 * s, 790 * s), radius=64 * s, fill=255)
+        # index finger
+        md.rounded_rectangle((370 * s, 185 * s, 474 * s, 560 * s), radius=52 * s, fill=255)
+        # middle finger
+        md.rounded_rectangle((494 * s, 155 * s, 598 * s, 560 * s), radius=52 * s, fill=255)
+
+    shape(mask_draw=md, fn=hand)
+    bg.paste(gold, (0, 0), mask)
+
+    d = ImageDraw.Draw(bg)
+
+    # thumb folded over the right side of the fist
+    thumb = Image.new("L", (W, W), 0)
+    td = ImageDraw.Draw(thumb)
+    s = SS
+    td.rounded_rectangle((600 * s, 540 * s, 800 * s, 790 * s), radius=70 * s, fill=255)
+    thumb = thumb.filter(ImageFilter.GaussianBlur(0.4 * s))
+    gold_dark = gradient_img(W, W, GOLD_MID, GOLD_DARK).convert("RGBA")
+    bg.paste(gold_dark, (0, 0), thumb)
+
+    # crease between the two fingers
+    d = ImageDraw.Draw(bg)
+    d.line((484 * s, 240 * s, 484 * s, 540 * s), fill=GOLD_DARK, width=9 * s)
+
+    # knuckle lines on the fist
+    for x0 in (300, 410, 520):
+        d.line((x0 * s, 640 * s, (x0 + 90) * s, 640 * s), fill=GOLD_DARK, width=8 * s)
+
+    # subtle highlight on the left edge of the fingers
+    hl = Image.new("L", (W, W), 0)
+    hd = ImageDraw.Draw(hl)
+    hd.rounded_rectangle((374 * s, 200 * s, 392 * s, 550 * s), radius=9 * s, fill=90)
+    hd.rounded_rectangle((498 * s, 170 * s, 516 * s, 550 * s), radius=9 * s, fill=90)
+    bg.paste(Image.new("RGBA", (W, W), (255, 240, 180, 255)), (0, 0), hl)
+
+    icon = bg.resize((SIZE, SIZE), Image.LANCZOS)
+    return icon.convert("RGB")
 
 
 icon = build()
@@ -59,11 +90,9 @@ icon.resize((192, 192), Image.LANCZOS).save("public/icon-192.png")
 icon.resize((180, 180), Image.LANCZOS).save("app/apple-icon.png")
 icon.resize((32, 32), Image.LANCZOS).save("app/favicon.ico", sizes=[(16, 16), (32, 32)])
 
-# maskable variant: artwork shrunk into the safe zone so Android can crop
-# it into any shape without cutting the fingers
 maskable = icon.copy()
-small = icon.resize((716, 716), Image.LANCZOS)
-maskable.paste(small, (154, 154))
+small = icon.resize((700, 700), Image.LANCZOS)
+maskable.paste(small, (162, 162))
 maskable.save("public/icon-maskable-512.png")
 maskable.resize((192, 192), Image.LANCZOS).save("public/icon-maskable-192.png")
 print("done")
