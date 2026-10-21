@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { isPushSupported, isPushEnabled, isStandalonePWA, isIOS } from './push-client'
+import { isPushSupported, isPushEnabled, isStandalonePWA, isIOS, registerServiceWorker } from './push-client'
 
 export default function PushPopup() {
   const [visible, setVisible] = useState(false)
@@ -14,6 +14,7 @@ export default function PushPopup() {
 
   useEffect(() => {
     let cancelled = false
+    registerServiceWorker()
     const check = async () => {
       const supported = isPushSupported()
       setUnsupported(!supported)

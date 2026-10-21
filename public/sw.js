@@ -6,6 +6,16 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim())
 })
 
+// network-first passthrough: makes the site installable as a PWA
+// (Chrome requires a service worker with a fetch handler) without
+// changing online behaviour
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  )
+})
+
 self.addEventListener('push', (event) => {
   let data = {}
   try {

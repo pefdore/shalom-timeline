@@ -36,6 +36,15 @@ export function isIOS() {
   return /iPad|iPhone|iPod/.test(window.navigator.userAgent)
 }
 
+// registers the service worker unconditionally so Chrome treats the
+// site as installable (icons from the manifest on the home screen)
+export async function registerServiceWorker() {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+  try {
+    await navigator.serviceWorker.register('/sw.js')
+  } catch {}
+}
+
 export async function enablePush(member) {
   if (!isPushSupported()) {
     return { ok: false, reason: 'unsupported' }
