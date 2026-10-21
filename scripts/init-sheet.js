@@ -85,6 +85,26 @@ async function initSheet() {
     console.log('⚠️ Erreur insertion catégories:', e.message)
   }
 
+  console.log('✍️ Configuration onglet PushSubs...')
+  try {
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
+    const hasPushSheet = meta.data.sheets.some((sh) => sh.properties.title === 'PushSubs')
+    if (!hasPushSheet) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        requestBody: { requests: [{ addSheet: { properties: { title: 'PushSubs' } } }] },
+      })
+    }
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'PushSubs!A1:D1',
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [['Membre', 'Endpoint', 'Subscription', 'Date']] },
+    })
+  } catch (e) {
+    console.log('⚠️ Erreur config PushSubs:', e.message)
+  }
+
   console.log('✅ Google Sheet configuré!')
 }
 

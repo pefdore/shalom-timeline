@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { saveState, checkOrgasCode } from '@/lib/investigation'
+import { sendPushToMembers } from '@/lib/push'
 
 export async function POST(request) {
   try {
@@ -37,6 +38,14 @@ export async function POST(request) {
       winner: '',
       solvedAt: '',
     })
+
+    try {
+      await sendPushToMembers([], {
+        title: '🕵️ Nouvelle enquête ouverte !',
+        body: 'Les orgas ont scellé un nouveau lieu secret. Premier indice dispo, à vos hypothèses !',
+        url: '/investigation',
+      })
+    } catch {}
 
     return NextResponse.json({ success: true, message: 'Lieu scellé dans le coffre-fort 📦' })
   } catch (error) {

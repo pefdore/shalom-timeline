@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
 import dynamic from 'next/dynamic'
+import PushNotifications from '../PushNotifications'
+import PushAdmin from '../PushAdmin'
 
 const GazatteMap = dynamic(() => import('./GazetteMap'), {
   ssr: false,
@@ -173,6 +175,9 @@ export default function Investigation() {
                 className="w-full py-4 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 disabled:opacity-50">
                 Entrer dans le Bureau des Enquêtes 🕵️
               </button>
+              <div className="pt-2 border-t border-gray-100">
+                <PushNotifications member={member} />
+              </div>
               <p className="text-xs text-center text-gray-400">Membre des orgas ? Connecte-toi avec ton code spécial pour sceller le lieu.</p>
             </div>
           </div>
@@ -211,6 +216,10 @@ export default function Investigation() {
             {teaser}
           </div>
         </div>
+
+        {orgas && (
+          <PushAdmin code={code} membres={MEMBRES} />
+        )}
 
         {orgas && !state?.solved && (
           <div className="bg-white rounded-3xl shadow-xl p-6">

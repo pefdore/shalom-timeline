@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import confetti from 'canvas-confetti'
 import { CATEGORIES, MEDALS, POINTS_BY_RANK, buildPalmares } from '@/lib/awards'
+import PushNotifications from '../PushNotifications'
 
 const PARTICIPANTS = [
   'Jeremy', 'Caroline', 'Arnaud', 'Coraline', 'Matthias', 'Laetitia',
@@ -254,6 +255,9 @@ export default function Awards() {
                 className="aw-btn aw-btn-primary w-full py-4 disabled:opacity-50 disabled:hover:transform-none disabled:hover:shadow-none">
                 {votingOpen ? 'Entrer dans l\'Arène ⚔️' : 'Votes fermés 🔒'}
               </button>
+              <div className="pt-2 border-t border-gray-100">
+                <PushNotifications member={selectedMember} />
+              </div>
             </div>
           </div>
         </div>

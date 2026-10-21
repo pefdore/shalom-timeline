@@ -4,6 +4,7 @@ import {
   checkMemberCode, checkOrgasCode, isKnownMember, MEMBRES, monthKey,
   isMatch, wrongVerdict, alreadyPlayedMsg,
 } from '@/lib/investigation'
+import { sendPushToMembers } from '@/lib/push'
 
 export async function POST(request) {
   try {
@@ -99,6 +100,18 @@ export async function POST(request) {
         verdict.msg = "C'EST ÇA ! Tout le monde a trouvé, l'enquête est officiellement bouclée !"
       }
       await saveState(patch)
+      try {
+        const everyone = updatedWinners.length >= updatedPlayers.length
+        await sendPushToMembers([], {
+          title: everyone
+            ? '🎉 Enquête bouclée !'
+            : `🕵️ ${member} a trouvé le lieu !`,
+          body: everyone
+            ? 'Tout le monde a démasqué le lieu. Rendez-vous sur le site pour la révélation !'
+            : 'Le podium s’agrandit... Les autres, un seul essai par mois, courage !',
+          url: '/investigation',
+        })
+      } catch {}
     }
 
     return NextResponse.json({
