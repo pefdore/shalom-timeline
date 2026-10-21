@@ -58,4 +58,12 @@ icon.save("public/icon-512.png")
 icon.resize((192, 192), Image.LANCZOS).save("public/icon-192.png")
 icon.resize((180, 180), Image.LANCZOS).save("app/apple-icon.png")
 icon.resize((32, 32), Image.LANCZOS).save("app/favicon.ico", sizes=[(16, 16), (32, 32)])
+
+# maskable variant: artwork shrunk into the safe zone so Android can crop
+# it into any shape without cutting the fingers
+maskable = icon.copy()
+small = icon.resize((716, 716), Image.LANCZOS)
+maskable.paste(small, (154, 154))
+maskable.save("public/icon-maskable-512.png")
+maskable.resize((192, 192), Image.LANCZOS).save("public/icon-maskable-192.png")
 print("done")
