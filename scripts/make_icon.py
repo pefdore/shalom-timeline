@@ -10,7 +10,7 @@ BG_BOTTOM = (14, 16, 20)
 WHITE = (250, 250, 250)
 
 # bounding box of the hand in public/shalom3.jpg (fractions of width/height)
-HAND_BOX = (0.4294, 0.2693, 0.6399, 0.7300)
+HAND_BOX = (0.410, 0.110, 0.650, 0.789)
 
 
 def gradient_img(w, h, top, bottom):
