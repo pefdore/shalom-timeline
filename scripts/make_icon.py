@@ -1,15 +1,16 @@
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw
 
-SS = 4  # supersampling factor
 SIZE = 1024
-W = SIZE * SS
+SS = 2
 
 GOLD_TOP = (233, 199, 95)
 GOLD_MID = (201, 162, 39)
-GOLD_BOTTOM = (150, 120, 28)
-GOLD_DARK = (138, 110, 26)
 BG_TOP = (35, 40, 51)
 BG_BOTTOM = (14, 16, 20)
+WHITE = (250, 250, 250)
+
+# bounding box of the hand in public/shalom3.jpg (fractions of width/height)
+HAND_BOX = (0.4294, 0.2693, 0.6399, 0.7300)
 
 
 def gradient_img(w, h, top, bottom):
@@ -28,48 +29,23 @@ def gradient_img(w, h, top, bottom):
     return img
 
 
-def build():
-    bg = gradient_img(W, W, BG_TOP, BG_BOTTOM).convert("RGBA")
-    gold = gradient_img(W, W, GOLD_TOP, GOLD_BOTTOM).convert("RGBA")
+def extract_hand():
+    src = Image.open("public/shalom3.jpg").convert("L")
+    w, h = src.size
+    box = tuple(int(c * (w if i % 2 == 0 else h)) for i, c in enumerate(HAND_BOX))
+    hand = src.crop(box)
+    # upscale for smooth compositing
+    hand = hand.resize((hand.width * 6, hand.height * 6), Image.LANCZOS)
+    # white line art on black -> RGBA with white strokes, transparent bg
+    alpha = hand.point(lambda p: 0 if p < 60 else (255 if p > 160 else int((p - 60) * 255 / 100)))
+    art = Image.new("RGBA", hand.size, WHITE + (0,))
+    art.putalpha(alpha)
+    # trim to content
+    bbox = alpha.getbbox()
+    return art.crop(bbox)
 
-    mask = Image.new("L", (W, W), 0)
-    md = ImageDraw.Draw(mask)
-    s = SS
 
-    # wrist
-    md.rounded_rectangle((400 * s, 730 * s, 624 * s, W), radius=40 * s, fill=255)
-    # fist
-    md.rounded_rectangle((240 * s, 555 * s, 784 * s, 790 * s), radius=64 * s, fill=255)
-    # index finger
-    md.rounded_rectangle((370 * s, 185 * s, 474 * s, 560 * s), radius=52 * s, fill=255)
-    # middle finger
-    md.rounded_rectangle((494 * s, 155 * s, 598 * s, 560 * s), radius=52 * s, fill=255)
-
-    bg.paste(gold, (0, 0), mask)
-
-    # thumb folded over the right side of the fist
-    thumb = Image.new("L", (W, W), 0)
-    td = ImageDraw.Draw(thumb)
-    td.rounded_rectangle((600 * s, 540 * s, 800 * s, 790 * s), radius=70 * s, fill=255)
-    thumb = thumb.filter(ImageFilter.GaussianBlur(0.4 * s))
-    gold_dark = gradient_img(W, W, GOLD_MID, GOLD_DARK).convert("RGBA")
-    bg.paste(gold_dark, (0, 0), thumb)
-
-    d = ImageDraw.Draw(bg)
-    # crease between the two fingers
-    d.line((484 * s, 240 * s, 484 * s, 540 * s), fill=GOLD_DARK, width=9 * s)
-    # knuckle lines on the fist
-    for x0 in (300, 410, 520):
-        d.line((x0 * s, 640 * s, (x0 + 90) * s, 640 * s), fill=GOLD_DARK, width=8 * s)
-
-    # subtle highlight on the left edge of the fingers
-    hl = Image.new("L", (W, W), 0)
-    hd = ImageDraw.Draw(hl)
-    hd.rounded_rectangle((374 * s, 200 * s, 392 * s, 550 * s), radius=9 * s, fill=90)
-    hd.rounded_rectangle((498 * s, 170 * s, 516 * s, 550 * s), radius=9 * s, fill=90)
-    bg.paste(Image.new("RGBA", (W, W), (255, 240, 180, 255)), (0, 0), hl)
-
-    # "SHALOM" wordmark drawn as vector strokes at the bottom
+def draw_shalom(d, s, y0_units, scale, color, width):
     GLYPHS = {
         'S': [((30,0),(70,0)), ((30,0),(30,60)), ((30,60),(70,60)), ((70,60),(70,120)), ((70,120),(30,120))],
         'H': [((30,0),(30,120)), ((70,0),(70,120)), ((30,60),(70,60))],
@@ -79,21 +55,42 @@ def build():
         'M': [((20,120),(20,0)), ((20,0),(50,50)), ((50,50),(80,0)), ((80,0),(80,120))],
     }
     text = "SHALOM"
-    scale = int(0.95 * s)
     total_units = 100 * len(text) + 30 * (len(text) - 1)
-    x0 = (W - total_units * scale) // 2
-    y0 = int(830 * s)
+    x0 = (W_TOTAL - total_units * scale) // 2
     for i, ch in enumerate(text):
         gx = x0 + i * 130 * scale
         for (px1, py1), (px2, py2) in GLYPHS[ch]:
             d.line(
-                (gx + px1 * scale, y0 + py1 * scale, gx + px2 * scale, y0 + py2 * scale),
-                fill=GOLD_TOP,
-                width=int(14 * s),
+                (gx + px1 * scale, y0_units + py1 * scale, gx + px2 * scale, y0_units + py2 * scale),
+                fill=color,
+                width=width,
             )
 
-    icon = bg.resize((SIZE, SIZE), Image.LANCZOS)
-    return icon.convert("RGB")
+
+W_TOTAL = SIZE * SS
+
+
+def build():
+    bg = gradient_img(W_TOTAL, W_TOTAL, BG_TOP, BG_BOTTOM).convert("RGBA")
+
+    hand = extract_hand()
+    # place the hand: occupies ~62% of the icon width, centered, top at 6%
+    target_w = int(0.62 * W_TOTAL)
+    ratio = hand.height / hand.width
+    target_h = int(target_w * ratio)
+    if target_h > int(0.66 * W_TOTAL):
+        target_h = int(0.66 * W_TOTAL)
+        target_w = int(target_h / ratio)
+    hand = hand.resize((target_w, target_h), Image.LANCZOS)
+    hx = (W_TOTAL - target_w) // 2
+    hy = int(0.05 * W_TOTAL)
+    bg.alpha_composite(hand, (hx, hy))
+
+    d = ImageDraw.Draw(bg)
+    # SHALOM wordmark in gold at the bottom
+    draw_shalom(d, SS, int(0.815 * W_TOTAL), int(0.62 * SS), GOLD_TOP, int(10 * SS))
+
+    return bg.resize((SIZE, SIZE), Image.LANCZOS).convert("RGB")
 
 
 icon = build()
@@ -101,13 +98,12 @@ icon.save("app/icon.png")
 icon.save("public/icon-512.png")
 icon.resize((192, 192), Image.LANCZOS).save("public/icon-192.png")
 icon.resize((180, 180), Image.LANCZOS).save("public/apple-touch-icon.png")
-icon.resize((180, 180), Image.LANCZOS).save("public/apple-touch-icon.png")
 icon.resize((48, 48), Image.LANCZOS).save("public/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
 icon.resize((32, 32), Image.LANCZOS).save("public/favicon-32.png")
 
 maskable = icon.copy()
-small = icon.resize((700, 700), Image.LANCZOS)
-maskable.paste(small, (162, 162))
+small = icon.resize((640, 640), Image.LANCZOS)
+maskable.paste(small, (192, 192))
 maskable.save("public/icon-maskable-512.png")
 maskable.resize((192, 192), Image.LANCZOS).save("public/icon-maskable-192.png")
 print("done")
