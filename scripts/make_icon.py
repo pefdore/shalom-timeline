@@ -74,21 +74,19 @@ def build():
     bg = gradient_img(W_TOTAL, W_TOTAL, BG_TOP, BG_BOTTOM).convert("RGBA")
 
     hand = extract_hand()
-    # place the hand: occupies ~62% of the icon width, centered, top at 6%
-    target_w = int(0.62 * W_TOTAL)
+    # hand fills the icon almost entirely, centered with even margins
+    target_w = int(0.86 * W_TOTAL)
     ratio = hand.height / hand.width
     target_h = int(target_w * ratio)
-    if target_h > int(0.66 * W_TOTAL):
-        target_h = int(0.66 * W_TOTAL)
+    if target_h > int(0.86 * W_TOTAL):
+        target_h = int(0.86 * W_TOTAL)
         target_w = int(target_h / ratio)
     hand = hand.resize((target_w, target_h), Image.LANCZOS)
     hx = (W_TOTAL - target_w) // 2
-    hy = int(0.05 * W_TOTAL)
+    hy = (W_TOTAL - target_h) // 2
     bg.alpha_composite(hand, (hx, hy))
 
     d = ImageDraw.Draw(bg)
-    # SHALOM wordmark in gold at the bottom
-    draw_shalom(d, SS, int(0.815 * W_TOTAL), int(0.62 * SS), GOLD_TOP, int(10 * SS))
 
     return bg.resize((SIZE, SIZE), Image.LANCZOS).convert("RGB")
 
